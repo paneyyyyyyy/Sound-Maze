@@ -54,6 +54,11 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        /* 【修改重點 1】畫布本體平滑縮放動畫：大結局時放大4倍吞噬全螢幕 */
+        #game-canvas {
+            transition: transform 1.0s cubic-bezier(0.1, 0.8, 0.3, 1);
+            transform: scale(1);
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-2 md:p-6 overflow-hidden">
@@ -69,7 +74,7 @@
                     <path d="M50,10 C25,10 15,35 15,60 C15,75 25,90 50,90 C75,90 85,75 85,60 C85,35 75,10 50,10 Z M35,45 C38,45 40,48 40,51 C40,54 38,57 35,57 C32,57 30,54 30,51 C30,48 32,45 35,45 Z M65,45 C68,45 70,48 70,51 C70,54 68,57 65,57 C62,57 60,54 60,51 C60,48 62,45 65,45 Z M50,65 C40,65 35,75 35,75 C35,75 42,72 50,72 C58,72 65,75 65,75 C65,75 60,65 50,65 Z"/>
                 </svg>
             </div>
-            <p class="text-gray-400 text-xs font-semibold mb-6">倒計時歸零，已被迷宮深淵吞噬...</p>
+            <p class="text-gray-400 text-xs font-semibold mb-6">時間耗盡！已被迷宮深淵吞噬...</p>
             <button id="btn-failed-retry" class="px-8 py-3 bg-red-900 hover:bg-red-800 active:scale-95 text-white font-orbitron font-bold rounded-xl shadow-lg glow-red transition-all">
                 <i class="fa-solid fa-rotate-left mr-2"></i> 重新復活
             </button>
@@ -84,15 +89,15 @@
 
             <div id="game-instructions-box" class="flex-1 flex flex-col justify-center max-w-xs space-y-4 my-4">
                 <div class="bg-gray-900/60 p-4 rounded-2xl border border-gray-800/80 text-left text-xs text-gray-300 leading-relaxed">
-                    <p class="font-semibold text-emerald-400 mb-2 font-orbitron"><i class="fa-solid fa-circle-info mr-1"></i> 遊戲隨機試煉規則：</p>
-                    <p class="mb-2">這裡每道題目的正確共鳴頻率與滑桿藏匿點皆為**「完全隨機生成」**。</p>
-                    <p class="mb-2"><span class="text-emerald-400 font-semibold">目標：</span>左右拖曳最下方的調節軌道，盲聽尋找能與上方目標音調產生共鳴的點。</p>
-                    <p class="mb-1"><span class="text-yellow-400 font-semibold">⚠️ 20秒超硬核規則：</span></p>
+                    <p class="font-semibold text-emerald-400 mb-2 font-orbitron"><i class="fa-solid fa-circle-info mr-1"></i> 隨機音高試煉規則：</p>
+                    <p class="mb-2">這裡每道題目的正確共鳴音頻與隱藏答案點皆為**「完全隨機生成」**。</p>
+                    <p class="mb-2"><span class="text-emerald-400 font-semibold">目標：</span>左右拖曳下方的調節滑鈕，盲聽尋找與上方目標頻率產生共鳴的位置。</p>
+                    <p class="mb-1"><span class="text-yellow-400 font-semibold">⚠️ 20秒生存計時規則：</span></p>
                     <ul class="list-disc list-inside space-y-1 pl-1 text-red-300 font-semibold">
-                        <li>每一新題只有 **20 秒生存時間**，未破解則直接死亡！</li>
-                        <li>拖曳時若「未瞄準共鳴點」，生存時間會瘋狂倒數。</li>
-                        <li>滑鈕放開時，倒計時會暫停，保留當前殘餘時間。</li>
-                        <li>瞄準共鳴點必須**穩住 1 秒**啟動共鳴，並**持續維持 5 秒**才能過關！</li>
+                        <li>**不論有沒有按按鍵，20秒生存時間皆會持續倒數！**</li>
+                        <li>換新題目時，倒計時會自動重置補滿回 20 秒。</li>
+                        <li>滑鈕由左至右 ➔ 聲音由低變高 (Flat to Sharp)。</li>
+                        <li>對準時點會亮藍色，**必須穩穩停留滿 1 秒**才會觸發綠色前進計時 5 秒。</li>
                     </ul>
                 </div>
             </div>
@@ -124,7 +129,7 @@
             </div>
         </div>
 
-        <div class="px-4 py-3 bg-gray-900/20 border-b border-gray-900/60 z-10 flex flex-col gap-2">
+        <div class="px-4 py-3 bg-gray-900/20 border-b border-b-gray-900/60 z-10 flex flex-col gap-2">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <div class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
@@ -151,11 +156,11 @@
             </div>
         </div>
 
-        <div id="canvas-container" class="flex-1 relative bg-black z-10 flex items-center justify-center">
+        <div id="canvas-container" class="flex-1 relative bg-black z-10 flex items-center justify-center overflow-hidden">
             <canvas id="game-canvas" class="absolute inset-0 w-full h-full"></canvas>
 
             <div id="game-toast" class="absolute top-4 px-4 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-700 text-xs font-semibold text-emerald-300 pointer-events-none opacity-0 transition-opacity duration-300 shadow-md z-20">
-                鎖定共鳴中...
+                前進中...
             </div>
 
             <div id="danger-pulse" class="absolute inset-0 border-4 border-red-600/0 rounded-[36px] pointer-events-none transition-all duration-300 z-20"></div>
@@ -202,10 +207,8 @@
         let currentLevelIndex = 0;
         let currentNodeIndex = 0;
         
-        // 【修改重點 5】：生存血量機制改為 20 秒倒計時
         let maxSanityTime = 20.0;
         let sanity = 20.0; 
-
         let gameActive = false;
         let visualAssist = false;
 
@@ -214,7 +217,7 @@
         const particles = []; 
         const creepyEyes = [];
 
-        // Web Audio Variables
+        // Web Audio Variables【修正關鍵：靜態單例執行緒，絕不重複建立 context 杜絕卡死】
         let audioCtx = null;
         let playerOsc = null;
         let playerGain = null;
@@ -232,11 +235,11 @@
         let basePlayerRadius = 20;
         let targetPlayerRadius = 20;
         let isEndingFlash = false;
-        let endingFlashRadius = 0; // 用於大結局直接在 Canvas 內渲染擴散大小
+        let endingFlashRadius = 0; 
 
-        // 【修改重點 6】：防手震鎖定計時器
-        let alignmentTimer = 0; // 紀錄進入共鳴點的時間 (幀數，滿60幀為1秒)
-        let hasTriggeredGreen = false; // 是否已經成功觸發綠色共鳴狀態
+        // 核心對齊狀態變數（滿足 1 秒鎖定冷卻）
+        let alignmentTimer = 0;        // 累積幀數計時
+        let hasTriggeredGreen = false; // 是否正式過渡到綠色計時5秒
 
         // Elements
         const btnStart = document.getElementById('btn-start');
@@ -264,7 +267,6 @@
         const ghostFace = document.getElementById('ghost-face');
         const dangerPulse = document.getElementById('danger-pulse');
         const gameToast = document.getElementById('game-toast');
-        const phoneWrapper = document.getElementById('phone-wrapper');
 
         let gameWidth = gameCanvas.clientWidth;
         let gameHeight = gameCanvas.clientHeight;
@@ -287,9 +289,15 @@
         }
 
         function initAudio() {
-            if (audioCtx) return;
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
+            // 如果 Context 存在，直接沿用不重複 new，避開音訊執行緒鎖死
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            // 每次重新建立安全獨立的單次 Node 鍊結
             masterGain = audioCtx.createGain();
             masterGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
             masterGain.connect(audioCtx.destination);
@@ -325,11 +333,7 @@
             updateDroneTone();
         }
 
-        /**
-         * 【修改重點 4】：安全徹底銷毀清理音訊引擎，阻斷重製當機
-         */
-        function cleanupAudio() {
-            if (!audioCtx) return;
+        function safeDisconnectAudio() {
             try {
                 if (playerOsc) { playerOsc.stop(); playerOsc.disconnect(); }
                 if (harmonyOsc) { harmonyOsc.stop(); harmonyOsc.disconnect(); }
@@ -339,16 +343,13 @@
                 if (droneGain) droneGain.disconnect();
                 if (masterGain) masterGain.disconnect();
             } catch(e) {
-                console.log("Audio node already stopped");
+                console.log("Nodes clean up completed");
             }
-            audioCtx = null;
-            playerOsc = null;
-            harmonyOsc = null;
-            droneOsc = null;
+            playerOsc = null; harmonyOsc = null; droneOsc = null;
         }
 
         function updateDroneTone() {
-            if (!audioCtx) return;
+            if (!audioCtx || !droneOsc) return;
             const currentLvl = LEVELS[currentLevelIndex];
             droneOsc.frequency.setValueAtTime(currentLvl.bgmTone, audioCtx.currentTime);
         }
@@ -371,6 +372,7 @@
         }
 
         function playSuccessChime() {
+            if (!audioCtx) return;
             const now = audioCtx.currentTime;
             const freqs = [523.25, 659.25, 783.99, 1046.50];
             freqs.forEach((f, idx) => {
@@ -389,41 +391,35 @@
         }
 
         function playJumpscareSound() {
+            if (!audioCtx) return;
             const now = audioCtx.currentTime;
             const rumble = audioCtx.createOscillator();
-            rumble.type = 'sawtooth';
-            rumble.frequency.setValueAtTime(60, now);
-            rumble.frequency.exponentialRampToValueAtTime(20, now + 1.5);
+            rumble.type = 'sawtooth'; rumble.frequency.setValueAtTime(60, now); rumble.frequency.exponentialRampToValueAtTime(20, now + 1.5);
             const screech = audioCtx.createOscillator();
-            screech.type = 'sawtooth';
-            screech.frequency.setValueAtTime(1000, now);
-            screech.frequency.exponentialRampToValueAtTime(3000, now + 1);
+            screech.type = 'sawtooth'; screech.frequency.setValueAtTime(1000, now); screech.frequency.exponentialRampToValueAtTime(3000, now + 1);
             const gain = audioCtx.createGain();
-            gain.gain.setValueAtTime(0.6, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
-            rumble.connect(gain);
-            screech.connect(gain);
-            gain.connect(masterGain);
-            rumble.start(now);
-            screech.start(now);
-            rumble.stop(now + 1.8);
-            screech.stop(now + 1.8);
+            gain.gain.setValueAtTime(0.6, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
+            rumble.connect(gain); screech.connect(gain); gain.connect(masterGain);
+            rumble.start(now); screech.start(now);
+            rumble.stop(now + 1.8); screech.stop(now + 1.8);
         }
 
         function getTuningStatus() {
-            if (!sliderActive) {
-                return { isAligned: false, deltaRatio: 1, freqOffset: 0, actualFreq: 150, octaveOffset: 0 };
-            }
             const targetNode = LEVELS[currentLevelIndex].nodes[currentNodeIndex];
+            if (!targetNode) return { isAligned: false, deltaRatio: 1, actualFreq: 150, octaveOffset: 0 };
+            
             const targetPos = targetNode.targetPercent;
             const diff = sliderPercent - targetPos;
             const octaveOffset = diff * 2; 
             const actualFreq = targetNode.frequency * Math.pow(2, octaveOffset);
             const deltaRatio = Math.min(1, Math.abs(diff) * 2.5);
             
-            // 精準對齊判定
+            // 接近判定 (滑軌差距小於 14% 算接近亮藍色)
+            const isNear = Math.abs(diff) < 0.14;
+            // 精準對齊判定 (滑軌差距小於 3.5% 算完全鎖定)
             const isAligned = Math.abs(diff) < 0.035;
-            return { isAligned, deltaRatio, actualFreq, octaveOffset };
+
+            return { isAligned, isNear, deltaRatio, actualFreq, octaveOffset };
         }
 
         function spawnThemeParticles() {
@@ -443,12 +439,10 @@
                 if (currentTheme === 'forest') {
                     p.color = `rgba(${34 + Math.random()*40}, ${197 + Math.random()*30}, 94, `;
                 } else if (currentTheme === 'abyss') {
-                    p.color = `rgba(147, 197, 253, `;
-                    p.wiggleTimer = Math.random() * 100;
+                    p.color = `rgba(147, 197, 253, `; p.wiggleTimer = Math.random() * 100;
                 } else if (currentTheme === 'corridor') {
                     p.color = Math.random() > 0.5 ? `rgba(236, 72, 153, ` : `rgba(168, 85, 247, `;
-                    const notes = ['♫', '♪', '♮', '♯', '♬'];
-                    p.char = notes[Math.floor(Math.random() * notes.length)];
+                    const notes = ['♫', '♪', '♮', '♯', '♬']; p.char = notes[Math.floor(Math.random() * notes.length)];
                 }
                 themeParticles.push(p);
             }
@@ -456,8 +450,7 @@
 
         function handleCreepyEyes(deltaRatio) {
             if (deltaRatio > 0.45 && Math.random() < 0.03 && creepyEyes.length < 10) {
-                let x = Math.random() * gameWidth;
-                let y = Math.random() * gameHeight;
+                let x = Math.random() * gameWidth; let y = Math.random() * gameHeight;
                 if (Math.sqrt((x - gameWidth/2)**2 + (y - gameHeight/2)**2) > 80) {
                     creepyEyes.push({ x, y, scale: Math.random() * 0.5 + 0.5, blinkTimer: Math.random() * 100 + 50, life: 300 });
                 }
@@ -469,15 +462,10 @@
             }
         }
 
-        /**
-         * 重新塑造 Viewport：大結局白光直接在主 Canvas Layer 由內向外吞噬整台手機，徹底解決裁剪！
-         */
         function drawViewport() {
             if (gameCanvas.width !== gameCanvas.clientWidth || gameCanvas.height !== gameCanvas.clientHeight) {
-                gameCanvas.width = gameCanvas.clientWidth;
-                gameCanvas.height = gameCanvas.clientHeight;
-                gameWidth = gameCanvas.width;
-                gameHeight = gameCanvas.height;
+                gameCanvas.width = gameCanvas.clientWidth; gameCanvas.height = gameCanvas.clientHeight;
+                gameWidth = gameCanvas.width; gameHeight = gameCanvas.height;
             }
 
             gctx.fillStyle = '#020617';
@@ -487,10 +475,9 @@
             const playerX = gameWidth / 2;
             const playerY = gameHeight / 2;
 
-            // 1. 環境粒子
+            // 1. 環境主題背景粒子
             spawnThemeParticles();
             const currentTheme = LEVELS[currentLevelIndex].type;
-
             themeParticles.forEach((p) => {
                 p.x += p.speedX; p.y += p.speedY; p.rot += p.rotSpeed;
                 if (p.x < -20) p.x = gameWidth + 20; if (p.x > gameWidth + 20) p.x = -20;
@@ -532,24 +519,30 @@
                 }
             });
 
-            // 5. 核心原點 (Player Core) - 包含走路起伏
+            // 5. 【修改重點 6】核心點三色燈號控制 ➔ 錯誤：紅 | 接近：藍 | 正確且不滿1秒：發光藍 | 正確滿1秒：綠
             basePlayerRadius += (targetPlayerRadius - basePlayerRadius) * 0.1;
             const bobbingPlayerY = playerY + currentBobY;
-            
             const playerGrad = gctx.createRadialGradient(playerX, bobbingPlayerY, 1, playerX, bobbingPlayerY, basePlayerRadius);
             
-            // 【修改重點 6】：必須過了 1 秒防手震冷卻，小點才會真正轉為綠色共鳴
-            if (status.isAligned && sliderActive && hasTriggeredGreen) {
-                playerGrad.addColorStop(0, '#ffffff'); playerGrad.addColorStop(0.3, '#10b981'); playerGrad.addColorStop(1, 'rgba(16, 185, 129, 0)');
-            } else if (!status.isAligned && sliderActive) {
-                playerGrad.addColorStop(0, '#ffffff'); playerGrad.addColorStop(0.3, '#ef4444'); playerGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
-            } else {
+            if (status.isAligned) {
+                if (hasTriggeredGreen) {
+                    // 正確鎖定滿1秒 ➔ 變綠色計時
+                    playerGrad.addColorStop(0, '#ffffff'); playerGrad.addColorStop(0.3, '#10b981'); playerGrad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+                } else {
+                    // 對準但未滿1秒 ➔ 藍色恆亮
+                    playerGrad.addColorStop(0, '#ffffff'); playerGrad.addColorStop(0.3, '#2563eb'); playerGrad.addColorStop(1, 'rgba(37, 99, 235, 0)');
+                }
+            } else if (status.isNear) {
+                // 快接近正確方向 ➔ 呈現探索藍色
                 playerGrad.addColorStop(0, '#ffffff'); playerGrad.addColorStop(0.3, '#3b82f6'); playerGrad.addColorStop(1, 'rgba(59, 130, 246, 0)');
+            } else {
+                // 錯誤/偏離方向 ➔ 呈現紅色警示
+                playerGrad.addColorStop(0, '#ffffff'); playerGrad.addColorStop(0.3, '#ef4444'); playerGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
             }
 
             gctx.save(); gctx.beginPath(); gctx.arc(playerX, bobbingPlayerY, basePlayerRadius, 0, Math.PI * 2); gctx.fillStyle = playerGrad; gctx.fill(); gctx.restore();
 
-            // 6. 繽紛大結局噴發煙火粒子
+            // 6. 勝利花火
             if (!gameActive && particles.length > 0) {
                 particles.forEach(p => {
                     p.x += p.vx; p.y += p.vy; p.vy += 0.04; p.alpha -= 0.006;
@@ -557,15 +550,11 @@
                 });
             }
 
-            // 【完全修復 1：打破限制】：如果進入走出出口的大結局，由 Canvas 核心強行繪製一個純白大圓，直接吞噬覆蓋全圖！
+            // 大結局白光直接填滿整個畫布內部
             if (isEndingFlash) {
-                gctx.save();
-                gctx.fillStyle = '#ffffff';
-                gctx.beginPath();
-                // 以中央點為心，直接擴大到超過整個手機框寬度的特大半徑
+                gctx.save(); gctx.fillStyle = '#ffffff'; gctx.beginPath();
                 gctx.arc(playerX, playerY, endingFlashRadius, 0, Math.PI * 2);
-                gctx.fill();
-                gctx.restore();
+                gctx.fill(); gctx.restore();
             }
         }
 
@@ -579,6 +568,7 @@
             const status = getTuningStatus();
             const time = Date.now() * 0.005;
             const targetNode = LEVELS[currentLevelIndex].nodes[currentNodeIndex];
+            if (!targetNode) return;
 
             if (sliderActive) {
                 octx.strokeStyle = 'rgba(16, 185, 129, 0.35)'; octx.lineWidth = 2; octx.beginPath();
@@ -588,7 +578,7 @@
                 }
                 octx.stroke();
 
-                octx.strokeStyle = (status.isAligned && hasTriggeredGreen) ? `rgba(59, 130, 246, 0.75)` : `rgba(239, 68, 68, 0.75)`;
+                octx.strokeStyle = status.isAligned ? `rgba(59, 130, 246, 0.75)` : `rgba(239, 68, 68, 0.75)`;
                 const freqScalingFactor = 0.05 * Math.pow(2, status.octaveOffset);
                 octx.beginPath();
                 for (let x = 0; x < width; x++) {
@@ -610,31 +600,29 @@
             }
         }
 
-        let stepProgress = 0; 
-        let walkTimer = 0;    
-        let currentBobY = 0;  
-
         function updateLogic() {
             if (!gameActive) return;
 
             const status = getTuningStatus();
             const isLastNode = (currentLevelIndex === LEVELS.length - 1) && (currentNodeIndex === LEVELS[currentLevelIndex].nodes.length - 1);
 
-            // ─── 【修改重點 2】：手握滑鈕拖曳時判定計時
+            // ─── 【修改重點 5】：定時生存炸彈機制（只要開局，不論是否操作滑桿都在無情倒計時） ───
+            if (!hasTriggeredGreen && !isEndingFlash) {
+                sanity = Math.max(0, sanity - (1 / 60)); // 精確每幀扣減 1/60 秒
+            }
+
             if (sliderActive && !isEndingFlash) {
-                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-                
                 playerOsc.frequency.setTargetAtTime(status.actualFreq, audioCtx.currentTime, 0.05);
                 playerGain.gain.setTargetAtTime(0.25, audioCtx.currentTime, 0.1);
 
-                // ─── 【修改重點 6】：共鳴點防手震 1 秒冷卻判定 ───
+                // ─── 【修改重點 6】：1秒恆亮藍色盲區冷卻 ───
                 if (status.isAligned) {
                     alignmentTimer++;
-                    if (alignmentTimer >= 60) { // 幀數滿 60 (約1秒) ➔ 正式啟用綠色共鳴
-                        hasTriggeredGreen = true;
+                    if (alignmentTimer >= 60) { 
+                        hasTriggeredGreen = true; // 超過 1 秒（60幀）➔ 順利觸發綠色前進倒數
                     }
                 } else {
-                    // 一旦滑移出範圍 ➔ 瞬間重置計時器
+                    // 只要手震偏離 ➔ 全部重算
                     alignmentTimer = 0;
                     hasTriggeredGreen = false;
                 }
@@ -646,22 +634,19 @@
                     harmonyGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
                 }
 
-                // ─── 【修改重點 5】：未共鳴鎖定 ➔ 20秒生命倒計時減少 ───
+                // 環境動態警告低音
                 if (!hasTriggeredGreen) {
-                    sanity = Math.max(0, sanity - (1 / 60)); // 每秒精準扣減 1 秒生存時間
-                    
                     const scareFactor = status.deltaRatio * 0.4;
                     droneGain.gain.setTargetAtTime(0.01 + scareFactor, audioCtx.currentTime, 0.1);
                     dangerPulse.style.borderColor = `rgba(220, 38, 38, ${0.1 + status.deltaRatio * 1.5})`;
                 } else {
-                    // 共鳴啟動時 ➔ 生存倒計時完全凍結不扣
                     droneGain.gain.setTargetAtTime(0.01, audioCtx.currentTime, 0.3);
                     dangerPulse.style.borderColor = 'rgba(220, 38, 38, 0)';
                 }
 
                 handleCreepyEyes(status.deltaRatio);
 
-                // 步行動效起伏
+                // 步行動效
                 let speedMultiplier = 1.0;
                 let amplitudeMultiplier = 1.0;
                 if (isLastNode && hasTriggeredGreen) {
@@ -671,7 +656,7 @@
                 walkTimer += 0.15 * speedMultiplier;
                 currentBobY = Math.abs(Math.sin(walkTimer)) * -8 * amplitudeMultiplier; 
 
-                // 5秒倒數共鳴
+                // 5秒共鳴前進倒數
                 if (hasTriggeredGreen) {
                     stepProgress += (100 / (60 * 5)); 
                     const remainingSeconds = Math.ceil((100 - stepProgress) / 20);
@@ -687,18 +672,14 @@
 
                     if (stepProgress >= 100) advanceNode();
                 } else {
-                    if (status.isAligned) {
-                        gameToast.innerText = `正在聚焦聲波中共振...`;
-                        gameToast.style.opacity = "1";
-                    } else {
-                        gameToast.style.opacity = "0";
-                    }
+                    // 【修改重點 6】：進入 1 秒冷卻盲區時，畫面保持絕對純淨，無任何提示提示字
+                    gameToast.style.opacity = "0";
                     stepProgress = Math.max(0, stepProgress - 0.4);
                     if (isLastNode) targetPlayerRadius = Math.max(20, 20 + (stepProgress * 1.5));
                 }
 
             } else {
-                // 【修改重點 2】：放開手未拖曳 ➔ 20秒生命計時完全暫停在當下！不扣除任何血量
+                // 未點選拖曳時：重置冷卻與綠色狀態
                 alignmentTimer = 0;
                 hasTriggeredGreen = false;
 
@@ -714,7 +695,7 @@
                 if (isLastNode && !isEndingFlash) targetPlayerRadius = Math.max(20, 20 + (stepProgress * 1.5));
             }
 
-            // 更新生命計時 UI 面板
+            // 實時刷新計時 UI
             sanityBar.style.width = `${(sanity / maxSanityTime) * 100}%`;
             sanityText.innerText = `${sanity.toFixed(1)}s`;
 
@@ -722,17 +703,12 @@
                 tunerNeedle.style.left = `${Math.max(2, Math.min(98, (status.octaveOffset + 1) * 50))}%`;
             }
 
-            // 倒計時歸零 ➔ 慘遭黑闇吞噬
             if (sanity <= 0) triggerJumpscare();
-
-            // 大結局白光擴散動畫幅度的物理遞增
-            if (isEndingFlash) {
-                endingFlashRadius += 16; 
-            }
+            if (isEndingFlash) endingFlashRadius += 18; 
         }
 
         /**
-         * 順利破解當前音節
+         * 成功通關當前題目
          */
         function advanceNode() {
             const currentLvl = LEVELS[currentLevelIndex];
@@ -749,7 +725,7 @@
             themeParticles.length = 0; 
             playSuccessChime();
 
-            // 【修改重點 1 & 5】：只要邁入任何全新的一題，20 秒生命計時徹底恢復滿值
+            // ─── 【修改重點 5】：邁入全新題目，倒計時無條件重置刷新為 20 秒 ───
             sanity = maxSanityTime;
 
             for (let k = 0; k < 30; k++) {
@@ -776,26 +752,26 @@
         }
 
         /**
-         * 【完全修復 1】：大結局全螢幕白光融滿覆蓋（利用 Canvas 動態向外擠壓覆蓋示波器與滑桿）
+         * 【完全修復 1】：大結局畫布本體物理放大 4 倍，融滿手機外框！
          */
         function triggerEndingSequence() {
             gameActive = false;
             sliderActive = false;
             isEndingFlash = true;
-            endingFlashRadius = 20; // 從原點開始向外狂飆擴大
+            endingFlashRadius = 20;
+
+            // 物理放大畫布本體，強行衝破所有夾層限制，吞噬整台手機外框
+            gameCanvas.style.transform = "scale(4)";
 
             setTimeout(() => {
                 playSuccessChime();
-                // 於選單大畫布上爆發彩色火花
                 for (let i = 0; i < 150; i++) {
                     particles.push({
                         x: gameWidth / 2 + (Math.random() - 0.5) * 40,
                         y: gameHeight / 2 + (Math.random() - 0.5) * 40,
                         size: Math.random() * 5 + 2.5,
-                        vx: (Math.random() - 0.5) * 14,
-                        vy: (Math.random() - 0.5) * 14 - 3, 
-                        alpha: 1.6,
-                        color: `hsl(${Math.random() * 360}, 100%, 65%)`
+                        vx: (Math.random() - 0.5) * 14, vy: (Math.random() - 0.5) * 14 - 3, 
+                        alpha: 1.6, color: `hsl(${Math.random() * 360}, 100%, 65%)`
                     });
                 }
                 triggerWinGame();
@@ -805,6 +781,7 @@
         function updateUI() {
             const lvl = LEVELS[currentLevelIndex];
             const node = lvl.nodes[currentNodeIndex];
+            if (!node) return;
             levelIndicator.innerText = `LEVEL ${currentLevelIndex + 1}`;
             levelName.innerText = lvl.name;
             targetNoteText.innerText = `${node.note} (${node.frequency} Hz)`;
@@ -816,7 +793,7 @@
         }
 
         /**
-         * 【修復 4】：重新啟動重製流程（融入完整的音訊模組清理，杜絕卡死當機）
+         * 【修復 2 & 3】：完美理順重置管線，共用唯一音訊線程，杜絕重複疊加當機
          */
         function resetGame(fullReset = false) {
             gameActive = false;
@@ -826,12 +803,15 @@
             alignmentTimer = 0;
             hasTriggeredGreen = false;
             
-            // 砍掉舊音訊，重開乾淨節點
-            cleanupAudio();
+            // 復原被放大的畫布本體比例
+            gameCanvas.style.transform = "scale(1)";
+
+            // 清除節點，但不銷毀 audioCtx 線程本體
+            safeDisconnectAudio();
 
             if (fullReset) currentLevelIndex = 0;
             currentNodeIndex = 0;
-            sanity = maxSanityTime; // 滿血
+            sanity = maxSanityTime; // 補滿 20 秒
             stepProgress = 0;
             basePlayerRadius = 20;
             targetPlayerRadius = 20;
@@ -853,7 +833,7 @@
             gameSubtitle.className = "text-xs font-orbitron text-emerald-500 tracking-widest mb-1";
 
             generateRandomPool(); 
-            initAudio(); // 重新載入音訊
+            initAudio(); // 安全配置新節點
             updateDroneTone();
             updateUI();
             
@@ -875,9 +855,7 @@
             const shakeInterval = setInterval(() => {
                 ghostFace.style.transform = `translate(${(Math.random() - 0.5) * 35}px, ${(Math.random() - 0.5) * 35}px) scale(${1 + shakes * 0.05})`;
                 shakes++;
-                if (shakes > 25) {
-                    clearInterval(shakeInterval);
-                }
+                if (shakes > 25) clearInterval(shakeInterval);
             }, 50);
         }
 
@@ -893,12 +871,12 @@
             
             gameInstructionsBox.innerHTML = `
                 <div class="bg-gray-950/80 p-6 rounded-2xl border-2 border-pink-500/50 text-center text-sm text-gray-100 backdrop-blur-md shadow-[0_0_25px_rgba(219,39,119,0.3)]">
-                    <p class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-pink-500 to-purple-500 text-xl mb-3 font-orbitron">未知迷宮·極限突破</p>
+                    <p class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-pink-500 to-purple-500 text-xl mb-3 font-orbitron">隨機迷宮·极限破除</p>
                     <p class="mb-4 text-xs text-gray-300 leading-relaxed">
-                        白光圓滿吞噬了黑暗。你成功抵抗了無情倒計時的生存考驗，憑藉超群的手腦協調與絕對聽覺，完美破解了迷宮！
+                        畫布完美綻放，白光衝破了黑暗的枷鎖。你經受住了 20 秒生存時間倒計時的極限考驗！
                     </p>
                     <p class="text-sm font-semibold text-emerald-400 glow-text-green">
-                        世界重新充滿絢爛色彩，你自由了！
+                        未知隨機被你徹底征服，世界重獲光明！
                     </p>
                 </div>
             `;
@@ -963,23 +941,22 @@
         }, { passive: true });
         window.addEventListener('touchend', () => {
             if (!sliderActive) return; sliderActive = false;
-            sliderAura.className = "absolute inset-0 rounded-2xl opacity-10 bg-gray-800";
+            sliderAura.className = "absolute inset-0 rounded-full opacity-10 bg-gray-800";
         });
 
         // 開始按鈕
         btnStart.addEventListener('click', () => {
             initAudio();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
             startOverlay.classList.add('pointer-events-none'); startOverlay.style.opacity = "0";
             gameActive = true;
             generateRandomPool(); 
             updateUI();
         });
 
-        // 【修改重點 3】：失敗畫面獨立重新復活鍵
+        // 失敗復活按鈕
         btnFailedRetry.addEventListener('click', (e) => {
             e.stopPropagation();
-            resetGame(true); // 完全重開一局乾淨新遊戲
+            resetGame(true); 
         });
 
         btnListen.addEventListener('click', (e) => { e.stopPropagation(); playTargetCue(); });
