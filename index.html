@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sound Maze - 聲音迷宮</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for premium cyberpunk typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        /* Custom glowing effects */
+        .glow-green {
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
+        }
+        .glow-red {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+        }
+        .glow-text-green {
+            text-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+        }
+        .glow-text-red {
+            text-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+        }
+        /* Spooky vignette overlay */
+        #vignette {
+            pointer-events: none;
+            transition: background 0.3s ease;
+        }
+        /* Pulse animations */
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 0.5; }
+        }
+        .pulse-ambient {
+            animation: pulse-slow 4s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-2 md:p-6 overflow-hidden">
+
+    <!-- Main Smartphone Wrapper -->
+    <div class="relative w-full max-w-md h-[92vh] max-h-[850px] bg-gray-950 rounded-[40px] border-4 border-gray-800 shadow-2xl flex flex-col overflow-hidden select-none">
+        
+        <!-- Vignette Red Glow Overlay for Scary Moments -->
+        <div id="vignette" class="absolute inset-0 z-30 pointer-events-none rounded-[36px] bg-radial-gradient"></div>
+
+        <!-- Jumpscare Screen -->
+        <div id="jumpscare-screen" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center hidden">
+            <div class="text-red-600 font-orbitron text-4xl font-extrabold tracking-widest animate-bounce mb-4 glow-text-red">LOST IN DARKNESS</div>
+            <div id="ghost-face" class="w-48 h-48 opacity-90 transition-transform duration-75">
+                <svg viewBox="0 0 100 100" class="w-full h-full fill-red-600 filter drop-shadow-[0_0_15px_rgba(220,38,38,0.8)]">
+                    <path d="M50,10 C25,10 15,35 15,60 C15,75 25,90 50,90 C75,90 85,75 85,60 C85,35 75,10 50,10 Z M35,45 C38,45 40,48 40,51 C40,54 38,57 35,57 C32,57 30,54 30,51 C30,48 32,45 35,45 Z M65,45 C68,45 70,48 70,51 C70,54 68,57 65,57 C62,57 60,54 60,51 C60,48 62,45 65,45 Z M50,65 C40,65 35,75 35,75 C35,75 42,72 50,72 C58,72 65,75 65,75 C65,75 60,65 50,65 Z"/>
+                </svg>
+            </div>
+            <p class="text-gray-400 text-sm mt-6 font-semibold animate-pulse">理智值歸零，已被深淵吞噬...</p>
+        </div>
+
+        <!-- Main Menu & Tutorial Overlay -->
+        <div id="start-overlay" class="absolute inset-0 z-40 bg-gray-950/95 flex flex-col items-center justify-between p-8 text-center rounded-[36px] transition-all duration-500">
+            <div class="w-full mt-4">
+                <div class="text-xs font-orbitron text-emerald-500 tracking-widest mb-1">ATMOSPHERIC AUDIO ADVENTURE</div>
+                <h1 class="text-4xl font-orbitron font-black text-gray-100 tracking-wider mb-2 glow-text-green">SOUND MAZE</h1>
+                <div class="h-[2px] w-1/3 bg-emerald-500 mx-auto rounded"></div>
+            </div>
+
+            <!-- Game Lore & Instructions -->
+            <div class="flex-1 flex flex-col justify-center max-w-xs space-y-4 my-4">
+                <div class="bg-gray-900/60 p-4 rounded-2xl border border-gray-800/80 text-left text-xs text-gray-300 leading-relaxed">
+                    <p class="font-semibold text-emerald-400 mb-2 font-orbitron"><i class="fa-solid fa-circle-info mr-1"></i> 遊戲世界觀 & 規則：</p>
+                    <p class="mb-2">你受困於一座伸手不見五指的黑暗迷宮。這裡的地圖是不可見的，唯有**「音高」**是你的唯一救贖。</p>
+                    <p class="mb-2"><span class="text-emerald-400 font-semibold">目標：</span>拖曳下方的 360° 虛擬搖桿，尋找與上方**「目標頻率」**完全一致的聲音。</p>
+                    <p class="mb-1"><span class="text-yellow-400 font-semibold">音聲指南：</span></p>
+                    <ul class="list-disc list-inside space-y-1 pl-1">
+                        <li>聲音偏高 (Sharp) 👉 偏向右側</li>
+                        <li>聲音偏低 (Flat) 👉 偏向左側</li>
+                        <li>聲音完美契合 👉 正前方 (通往出口的方向)</li>
+                    </ul>
+                    <p class="mt-2 text-red-400 font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> 警示：若偏離過遠，黑暗中的怪物將會甦醒，奪走你的理智...</p>
+                </div>
+                
+                <div class="text-[11px] text-gray-500 italic">
+                    * 本遊戲包含高頻與環境音效，建議佩戴耳機以獲得最佳體驗。 *
+                </div>
+            </div>
+
+            <!-- Start Button -->
+            <button id="btn-start" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-orbitron font-bold text-lg rounded-2xl transition-all duration-300 shadow-lg glow-green transform hover:scale-[1.02]">
+                <i class="fa-solid fa-play mr-2"></i> 進入黑暗迷宮
+            </button>
+        </div>
+
+        <!-- Header Controls & Level / Sanity Status -->
+        <div class="p-4 bg-gray-900/40 border-b border-gray-900 flex flex-col gap-2 z-10">
+            <div class="flex justify-between items-center">
+                <div>
+                    <span id="level-indicator" class="text-xs font-orbitron text-emerald-500 tracking-wider uppercase font-bold">LEVEL 1</span>
+                    <h2 id="level-name" class="text-sm font-semibold text-gray-200">細語樹海</h2>
+                </div>
+                <!-- Controls -->
+                <div class="flex items-center gap-2">
+                    <button id="btn-visual-assist" class="w-8 h-8 rounded-lg bg-gray-800/80 text-gray-400 hover:text-emerald-400 flex items-center justify-center transition" title="輔助模式">
+                        <i class="fa-solid fa-eye-slash text-xs"></i>
+                    </button>
+                    <button id="btn-mute" class="w-8 h-8 rounded-lg bg-gray-800/80 text-gray-400 hover:text-emerald-400 flex items-center justify-center transition" title="靜音">
+                        <i class="fa-solid fa-volume-high text-xs"></i>
+                    </button>
+                    <button id="btn-reset" class="w-8 h-8 rounded-lg bg-gray-800/80 text-gray-400 hover:text-red-400 flex items-center justify-center transition" title="重來">
+                        <i class="fa-solid fa-rotate-left text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sanity Gauge (HP) -->
+            <div class="w-full flex items-center gap-2">
+                <span class="text-[10px] font-orbitron text-red-500 font-bold w-12"><i class="fa-solid fa-brain mr-1 animate-pulse"></i>SAN</span>
+                <div class="flex-1 h-2 bg-gray-900 rounded-full overflow-hidden border border-gray-800">
+                    <div id="sanity-bar" class="h-full bg-red-600 rounded-full transition-all duration-100 w-full"></div>
+                </div>
+                <span id="sanity-text" class="text-[10px] font-orbitron text-red-400 font-bold w-8 text-right">100%</span>
+            </div>
+        </div>
+
+        <!-- Tuning Panel with Oscilloscope Visualizer -->
+        <div class="px-4 py-3 bg-gray-900/20 border-b border-gray-900/60 z-10 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
+                    <span class="text-xs font-orbitron text-gray-400">目標頻率: <span id="target-note-text" class="text-emerald-400 font-bold">A4 (440 Hz)</span></span>
+                </div>
+                <button id="btn-listen" class="px-3 py-1 rounded-full bg-emerald-950 border border-emerald-800 text-[11px] font-semibold text-emerald-400 hover:bg-emerald-900 active:scale-95 transition flex items-center gap-1">
+                    <i class="fa-solid fa-ear-listen text-[9px]"></i> 聽取範例
+                </button>
+            </div>
+
+            <!-- Dual-Wave Oscilloscope Canvas -->
+            <div class="relative h-20 bg-gray-950/90 rounded-xl border border-gray-900 overflow-hidden">
+                <canvas id="osc-canvas" class="w-full h-full"></canvas>
+                
+                <!-- Tuner Gauge (Only Visible with Visual Assist Mode) -->
+                <div id="tuner-assist" class="absolute inset-x-0 bottom-1 flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
+                    <div class="flex items-center justify-between w-4/5 text-[9px] text-gray-500 font-orbitron">
+                        <span>FLAT</span>
+                        <span class="text-emerald-400 font-bold">HARMONY</span>
+                        <span>SHARP</span>
+                    </div>
+                    <div class="w-4/5 h-1.5 bg-gray-900 rounded-full relative mt-0.5 border border-gray-800">
+                        <div id="tuner-needle" class="absolute w-2 h-2.5 bg-yellow-500 rounded-full top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 transition-all duration-75"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visual Viewport (Dark Maze Environment) -->
+        <div class="flex-1 relative bg-black overflow-hidden z-10 flex items-center justify-center">
+            <canvas id="game-canvas" class="absolute inset-0 w-full h-full"></canvas>
+
+            <!-- Screen Message Overlay -->
+            <div id="game-toast" class="absolute top-4 px-4 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-700 text-xs font-semibold text-emerald-300 pointer-events-none opacity-0 transition-opacity duration-300 shadow-md">
+                找到共鳴！保持前進...
+            </div>
+
+            <!-- Danger Red Pulsing Alert -->
+            <div id="danger-pulse" class="absolute inset-0 border-4 border-red-600/0 rounded-[36px] pointer-events-none transition-all duration-300"></div>
+        </div>
+
+        <!-- Bottom Controller Area -->
+        <div class="p-6 bg-gray-900/60 border-t border-gray-900/80 rounded-b-[36px] flex flex-col items-center justify-center z-10 relative">
+            <div class="text-center mb-3">
+                <p class="text-[11px] font-orbitron text-gray-400 tracking-wider">拖曳搖桿調整音高並探路</p>
+                <p id="joystick-value" class="text-[10px] font-orbitron text-gray-600">ANGLE: 0° | SHIFT: 0%</p>
+            </div>
+
+            <!-- 360-degree Virtual Joystick Container -->
+            <div id="joystick-boundary" class="relative w-36 h-36 rounded-full bg-gray-950 border-4 border-gray-800 flex items-center justify-center shadow-inner cursor-pointer select-none">
+                <!-- Compass Tick Marks -->
+                <div class="absolute inset-2 rounded-full border border-dashed border-gray-900 flex items-center justify-center pointer-events-none">
+                    <div class="absolute top-1 text-[8px] font-bold text-gray-700 font-orbitron">▲</div>
+                    <div class="absolute bottom-1 text-[8px] font-bold text-gray-700 font-orbitron">▼</div>
+                </div>
+
+                <!-- Glow Aura for state -->
+                <div id="joystick-aura" class="absolute inset-0 rounded-full opacity-10 transition-colors duration-300 bg-gray-800"></div>
+
+                <!-- Draggable Knob -->
+                <div id="joystick-knob" class="absolute w-14 h-14 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-600 shadow-lg flex items-center justify-center transition-all duration-75 active:scale-95 z-20">
+                    <div class="w-4 h-4 rounded-full bg-gray-500 shadow-inner"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Game & Level Parameters
+        const LEVELS = [
+            {
+                name: "細語樹海",
+                nodes: [
+                    { frequency: 440.00, note: "A4", targetAngle: -Math.PI/2 }, // Up
+                    { frequency: 523.25, note: "C5", targetAngle: 0 },         // Right
+                    { frequency: 659.25, note: "E5", targetAngle: Math.PI/2 }  // Down
+                ],
+                bgmTone: 110 // Base dark ambient drone pitch
+            },
+            {
+                name: "幽魂深淵",
+                nodes: [
+                    { frequency: 392.00, note: "G4", targetAngle: Math.PI },   // Left
+                    { frequency: 587.33, note: "D5", targetAngle: -Math.PI/4 }, // Up-Right
+                    { frequency: 698.46, note: "F5", targetAngle: Math.PI/2 },  // Down
+                    { frequency: 783.99, note: "G5", targetAngle: -Math.PI/2 }  // Up
+                ],
+                bgmTone: 98
+            },
+            {
+                name: "幻音迷廊",
+                nodes: [
+                    { frequency: 523.25, note: "C5", targetAngle: 0.75 * Math.PI }, // Down-Left
+                    { frequency: 659.25, note: "E5", targetAngle: -0.25 * Math.PI }, // Up-Right
+                    { frequency: 783.99, note: "G5", targetAngle: Math.PI },        // Left
+                    { frequency: 880.00, note: "A5", targetAngle: -0.5 * Math.PI },  // Up
+                    { frequency: 1046.50, note: "C6", targetAngle: 0 }             // Right
+                ],
+                bgmTone: 130
+            }
+        ];
+
+        let currentLevelIndex = 0;
+        let currentNodeIndex = 0;
+        let sanity = 100;
+        let score = 0;
+        let gameActive = false;
+        let visualAssist = false;
+        let isMuted = false;
+
+        // Visual Assets (Procedural Particle System)
+        const particles = [];
+        const creepyEyes = [];
+
+        // Web Audio Variables
+        let audioCtx = null;
+        let playerOsc = null;
+        let playerGain = null;
+        let harmonyOsc = null;
+        let harmonyGain = null;
+        let droneOsc = null;
+        let droneGain = null;
+        let masterGain = null;
+
+        // Joystick State
+        let joystickActive = false;
+        let joystickCenter = { x: 0, y: 0 };
+        let joystickVector = { x: 0, y: 0 };
+        const maxJoystickDrag = 60; // Max drag radius in pixels
+
+        // Elements
+        const btnStart = document.getElementById('btn-start');
+        const startOverlay = document.getElementById('start-overlay');
+        const levelIndicator = document.getElementById('level-indicator');
+        const levelName = document.getElementById('level-name');
+        const targetNoteText = document.getElementById('target-note-text');
+        const sanityBar = document.getElementById('sanity-bar');
+        const sanityText = document.getElementById('sanity-text');
+        const btnVisualAssist = document.getElementById('btn-visual-assist');
+        const btnMute = document.getElementById('btn-mute');
+        const btnReset = document.getElementById('btn-reset');
+        const btnListen = document.getElementById('btn-listen');
+        const joystickKnob = document.getElementById('joystick-knob');
+        const joystickBoundary = document.getElementById('joystick-boundary');
+        const joystickValueText = document.getElementById('joystick-value');
+        const joystickAura = document.getElementById('joystick-aura');
+        const oscCanvas = document.getElementById('osc-canvas');
+        const gameCanvas = document.getElementById('game-canvas');
+        const tunerAssist = document.getElementById('tuner-assist');
+        const tunerNeedle = document.getElementById('tuner-needle');
+        const jumpscareScreen = document.getElementById('jumpscare-screen');
+        const ghostFace = document.getElementById('ghost-face');
+        const dangerPulse = document.getElementById('danger-pulse');
+        const gameToast = document.getElementById('game-toast');
+
+        // Context Dimensions
+        let gameWidth = gameCanvas.clientWidth;
+        let gameHeight = gameCanvas.clientHeight;
+        const gctx = gameCanvas.getContext('2d');
+        const octx = oscCanvas.getContext('2d');
+
+        /**
+         * Initialize Web Audio Synthesis Nodes
+         */
+        function initAudio() {
+            if (audioCtx) return;
+            
+            // Create AudioContext (fallback for standard compatibility)
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Master volume node
+            masterGain = audioCtx.createGain();
+            masterGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            masterGain.connect(audioCtx.destination);
+
+            // 1. Player Synthesis (Primary Navigator)
+            playerOsc = audioCtx.createOscillator();
+            playerOsc.type = 'triangle'; // Smooth, atmospheric tone
+            playerGain = audioCtx.createGain();
+            playerGain.gain.setValueAtTime(0, audioCtx.currentTime); // Start silent
+            
+            playerOsc.connect(playerGain);
+            playerGain.connect(masterGain);
+            playerOsc.start();
+
+            // 2. Harmony Synth (Fills up beautifully when in tune)
+            harmonyOsc = audioCtx.createOscillator();
+            harmonyOsc.type = 'sine';
+            harmonyGain = audioCtx.createGain();
+            harmonyGain.gain.setValueAtTime(0, audioCtx.currentTime);
+
+            harmonyOsc.connect(harmonyGain);
+            harmonyGain.connect(masterGain);
+            harmonyOsc.start();
+
+            // 3. Eerie Dark Ambient Drone
+            droneOsc = audioCtx.createOscillator();
+            droneOsc.type = 'sawtooth';
+            
+            // Low pass filter to make it spooky and muffled
+            const droneFilter = audioCtx.createBiquadFilter();
+            droneFilter.type = 'lowpass';
+            droneFilter.frequency.setValueAtTime(220, audioCtx.currentTime);
+
+            droneGain = audioCtx.createGain();
+            droneGain.gain.setValueAtTime(0.01, audioCtx.currentTime); // 降低初始存在感，平常幾乎無聲
+
+            droneOsc.connect(droneFilter);
+            droneFilter.connect(droneGain);
+            droneGain.connect(masterGain);
+            droneOsc.start();
+            
+            updateDroneTone();
+        }
+
+        /**
+         * Change spooky ambient background tone according to the level
+         */
+        function updateDroneTone() {
+            if (!audioCtx) return;
+            const currentLvl = LEVELS[currentLevelIndex];
+            droneOsc.frequency.setValueAtTime(currentLvl.bgmTone, audioCtx.currentTime);
+        }
+
+        /**
+         * Listen to a brief cue of the target pitch
+         */
+        function playTargetCue() {
+            if (!audioCtx) initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const targetFreq = LEVELS[currentLevelIndex].nodes[currentNodeIndex].frequency;
+
+            // Simple synthesizer beep
+            const cueOsc = audioCtx.createOscillator();
+            const cueGain = audioCtx.createGain();
+            cueOsc.type = 'sine';
+            cueOsc.frequency.setValueAtTime(targetFreq, audioCtx.currentTime);
+            
+            cueGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            cueGain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.1);
+            cueGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+
+            cueOsc.connect(cueGain);
+            cueGain.connect(masterGain);
+            
+            cueOsc.start();
+            cueOsc.stop(audioCtx.currentTime + 1.5);
+        }
+
+        /**
+         * Play chime sequence on level completion
+         */
+        function playSuccessChime() {
+            const now = audioCtx.currentTime;
+            
+            const freqs = [523.25, 659.25, 783.99, 1046.50]; // Arpeggio C Major
+            freqs.forEach((f, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(f, now + idx * 0.1);
+                
+                gain.gain.setValueAtTime(0, now + idx * 0.1);
+                gain.gain.linearRampToValueAtTime(0.2, now + idx * 0.1 + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.4);
+                
+                osc.connect(gain);
+                gain.connect(masterGain);
+                osc.start(now + idx * 0.1);
+                osc.stop(now + idx * 0.1 + 0.4);
+            });
+        }
+
+        /**
+         * Horror sound effect played upon insanity depleting
+         */
+        function playJumpscareSound() {
+            const now = audioCtx.currentTime;
+            
+            // Low rumble
+            const rumble = audioCtx.createOscillator();
+            rumble.type = 'sawtooth';
+            rumble.frequency.setValueAtTime(60, now);
+            rumble.frequency.exponentialRampToValueAtTime(20, now + 1.5);
+            
+            // High pitch screech
+            const screech = audioCtx.createOscillator();
+            screech.type = 'sawtooth';
+            screech.frequency.setValueAtTime(1000, now);
+            screech.frequency.exponentialRampToValueAtTime(3000, now + 1);
+
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.6, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
+
+            rumble.connect(gain);
+            screech.connect(gain);
+            gain.connect(masterGain);
+
+            rumble.start(now);
+            screech.start(now);
+            rumble.stop(now + 1.8);
+            screech.stop(now + 1.8);
+        }
+
+        /**
+         * Get current navigation parameters based on joystick position
+         */
+        function getTuningStatus() {
+            if (!joystickActive) {
+                return { isAligned: false, deltaRatio: 1, freqOffset: 0, actualFreq: 150 };
+            }
+
+            // Calculate current joystick angle
+            const currentAngle = Math.atan2(joystickVector.y, joystickVector.x); // Range -PI to PI
+            const targetNode = LEVELS[currentLevelIndex].nodes[currentNodeIndex];
+            const targetAngle = targetNode.targetAngle;
+
+            // Difference in angle wrapped between -PI and PI
+            let angleDiff = currentAngle - targetAngle;
+            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+
+            // Map angle difference to frequency scaling
+            // Clockwise rotation (positive diff) -> Sharp pitch (higher freq)
+            // Counter-clockwise (negative diff) -> Flat pitch (lower freq)
+            const targetFreq = targetNode.frequency;
+            // Range offset: up to 1 octave down (-1) or 1 octave up (+1)
+            const octaveOffset = angleDiff / Math.PI; 
+            const actualFreq = targetFreq * Math.pow(2, octaveOffset);
+
+            // Alignment ratio: how close is the user to the correct path direction
+            // 0 is perfectly aligned, 1 is completely opposite
+            const deltaRatio = Math.abs(angleDiff) / Math.PI;
+
+            // We consider the player aligned if the direction mismatch is under ~15 degrees
+            const isAligned = Math.abs(angleDiff) < 0.22;
+
+            return {
+                isAligned,
+                deltaRatio, // 0 (tuned) to 1 (terribly out of tune)
+                actualFreq,
+                octaveOffset
+            };
+        }
+
+        /**
+         * Spawn atmospheric dust motes inside the maze
+         */
+        function spawnParticles() {
+            if (particles.length < 40) {
+                particles.push({
+                    x: Math.random() * gameWidth,
+                    y: Math.random() * gameHeight,
+                    size: Math.random() * 2.5 + 1,
+                    speedY: Math.random() * 0.4 - 0.2,
+                    speedX: Math.random() * 0.4 - 0.2,
+                    alpha: Math.random() * 0.5 + 0.1
+                });
+            }
+        }
+
+        /**
+         * Spawns scary visual blinking eyes in the darkness if sanity is dropping
+         */
+        function handleCreepyEyes(deltaRatio) {
+            // Spawning trigger rate increases with detuning
+            if (deltaRatio > 0.45 && Math.random() < 0.03 && creepyEyes.length < 10) {
+                const borderPadding = 40;
+                // Place eyes away from the center player
+                let x = Math.random() * gameWidth;
+                let y = Math.random() * gameHeight;
+                const dx = x - gameWidth / 2;
+                const dy = y - gameHeight / 2;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist > 80) { // Keep them in outer radius
+                    creepyEyes.push({
+                        x,
+                        y,
+                        scale: Math.random() * 0.5 + 0.5,
+                        blinkTimer: Math.random() * 100 + 50,
+                        life: 300 // Lifetime frames
+                    });
+                }
+            }
+
+            // Update & filter alive creepy eyes
+            for (let i = creepyEyes.length - 1; i >= 0; i--) {
+                const eye = creepyEyes[i];
+                eye.life--;
+                eye.blinkTimer--;
+                if (eye.blinkTimer <= 0) {
+                    eye.blinkTimer = Math.random() * 100 + 50; // reset blink
+                }
+                if (eye.life <= 0) {
+                    creepyEyes.splice(i, 1);
+                }
+            }
+        }
+
+        /**
+         * Redraw the Dark Maze viewport
+         */
+        function drawViewport() {
+            // Make sure sizes are correct
+            if (gameCanvas.width !== gameCanvas.clientWidth || gameCanvas.height !== gameCanvas.clientHeight) {
+                gameCanvas.width = gameCanvas.clientWidth;
+                gameCanvas.height = gameCanvas.clientHeight;
+                gameWidth = gameCanvas.width;
+                gameHeight = gameCanvas.height;
+            }
+
+            gctx.fillStyle = '#020617'; // Midnight slate background
+            gctx.fillRect(0, 0, gameWidth, gameHeight);
+
+            // Get navigation metadata
+            const status = getTuningStatus();
+            const playerX = gameWidth / 2;
+            const playerY = gameHeight / 2;
+
+            // 1. Calculate safe visibility radius based on harmony correctness
+            // Maximum alignment = wider light radius, total mismatch = tunnel-vision dark
+            const maxRadius = Math.max(160, gameWidth * 0.4);
+            const targetLightRadius = status.isAligned 
+                ? maxRadius 
+                : Math.max(25, maxRadius * (1 - status.deltaRatio));
+            
+            // Smoothly interpolate radius to avoid visual jittering
+            if (!this.lightRadius) this.lightRadius = targetLightRadius;
+            this.lightRadius += (targetLightRadius - this.lightRadius) * 0.1;
+
+            // 2. Draw safe ambient glowing path hint (ONLY when matching closer)
+            if (status.deltaRatio < 0.5) {
+                const node = LEVELS[currentLevelIndex].nodes[currentNodeIndex];
+                const dx = Math.cos(node.targetAngle);
+                const dy = Math.sin(node.targetAngle);
+
+                const grad = gctx.createRadialGradient(
+                    playerX + dx * 100, playerY + dy * 100, 10,
+                    playerX, playerY, this.lightRadius * 1.5
+                );
+                // Reveal faint bioluminescent pathway to the exit
+                const intensity = (1 - status.deltaRatio * 2);
+                if (intensity > 0) {
+                    grad.addColorStop(0, `rgba(16, 185, 129, ${intensity * 0.12})`);
+                    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                    gctx.fillStyle = grad;
+                    gctx.fillRect(0, 0, gameWidth, gameHeight);
+                }
+            }
+
+            // 3. Draw Shadows & Fog around the player (Clipping light region)
+            const shadowGrad = gctx.createRadialGradient(
+                playerX, playerY, this.lightRadius * 0.2,
+                playerX, playerY, this.lightRadius
+            );
+            shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+            shadowGrad.addColorStop(0.5, 'rgba(3, 7, 18, 0.5)');
+            shadowGrad.addColorStop(1, 'rgba(3, 7, 18, 1)');
+
+            // 4. Draw Ambient Dust/Echo Particles
+            spawnParticles();
+            gctx.fillStyle = '#ffffff';
+            particles.forEach((p, idx) => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+
+                // Loop borders
+                if (p.x < 0) p.x = gameWidth;
+                if (p.x > gameWidth) p.x = 0;
+                if (p.y < 0) p.y = gameHeight;
+                if (p.y > gameHeight) p.y = 0;
+
+                // Draw if within viewport
+                gctx.save();
+                gctx.globalAlpha = p.alpha;
+                gctx.beginPath();
+                gctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                gctx.fill();
+                gctx.restore();
+            });
+
+            // Apply Spooky Fog Shadow Over Everything
+            gctx.fillStyle = shadowGrad;
+            gctx.fillRect(0, 0, gameWidth, gameHeight);
+
+            // 5. Draw Blinking Spooky Eyes (outside light boundary, creeping in)
+            creepyEyes.forEach(eye => {
+                // Determine transparency depending on distance to light source
+                const dx = eye.x - playerX;
+                const dy = eye.y - playerY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                // Eyes disappear if light reaches them
+                if (dist < this.lightRadius) return;
+
+                const isBlinking = eye.blinkTimer < 15;
+                if (!isBlinking) {
+                    gctx.save();
+                    gctx.translate(eye.x, eye.y);
+                    gctx.scale(eye.scale, eye.scale);
+
+                    // Red Glow Background
+                    const eyeGlow = gctx.createRadialGradient(0, 0, 1, 0, 0, 10);
+                    eyeGlow.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
+                    eyeGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                    gctx.fillStyle = eyeGlow;
+                    gctx.beginPath();
+                    gctx.arc(0, 0, 10, 0, Math.PI*2);
+                    gctx.fill();
+
+                    // Left & Right Eyes (Feral slit)
+                    gctx.fillStyle = '#ef4444';
+                    // Draw eye contours
+                    gctx.beginPath();
+                    gctx.ellipse(-12, 0, 8, 4, 0, 0, Math.PI*2);
+                    gctx.ellipse(12, 0, 8, 4, 0, 0, Math.PI*2);
+                    gctx.fill();
+                    
+                    // Slit pupils (Black)
+                    gctx.fillStyle = '#000000';
+                    gctx.beginPath();
+                    gctx.ellipse(-12, 0, 2, 4, 0, 0, Math.PI*2);
+                    gctx.ellipse(12, 0, 2, 4, 0, 0, Math.PI*2);
+                    gctx.fill();
+
+                    gctx.restore();
+                }
+            });
+
+            // 6. Draw Player Core (Glowing Orb)
+            const playerGrad = gctx.createRadialGradient(
+                playerX, playerY, 1,
+                playerX, playerY, 20
+            );
+            
+            // Alter player orb color according to harmony state
+            if (status.isAligned && joystickActive) {
+                // Perfect frequency lock
+                playerGrad.addColorStop(0, '#ffffff');
+                playerGrad.addColorStop(0.3, '#10b981'); // Emerald
+                playerGrad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+            } else if (status.deltaRatio > 0.6) {
+                // Desperate / out-of-tune / sanity draining
+                playerGrad.addColorStop(0, '#ffffff');
+                playerGrad.addColorStop(0.3, '#ef4444'); // Crimson Danger
+                playerGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+            } else {
+                // Searching default
+                playerGrad.addColorStop(0, '#ffffff');
+                playerGrad.addColorStop(0.3, '#3b82f6'); // Cool blue searching
+                playerGrad.addColorStop(1, 'rgba(59, 130, 246, 0)');
+            }
+
+            gctx.save();
+            gctx.beginPath();
+            gctx.arc(playerX, playerY, 20, 0, Math.PI * 2);
+            gctx.fillStyle = playerGrad;
+            gctx.fill();
+            gctx.restore();
+
+            // 7. Render Navigation Exit Arrow (Very dim, only if aligned correctly)
+            if (status.isAligned && joystickActive) {
+                gctx.save();
+                gctx.translate(playerX, playerY);
+                // Rotate towards exit angle
+                const node = LEVELS[currentLevelIndex].nodes[currentNodeIndex];
+                gctx.rotate(node.targetAngle);
+                
+                gctx.strokeStyle = 'rgba(16, 185, 129, 0.7)';
+                gctx.lineWidth = 3;
+                gctx.beginPath();
+                gctx.moveTo(35, 0);
+                gctx.lineTo(55, 0);
+                gctx.lineTo(48, -7);
+                gctx.moveTo(55, 0);
+                gctx.lineTo(48, 7);
+                gctx.stroke();
+                gctx.restore();
+            }
+        }
+
+        /**
+         * Render the dual-frequency oscilloscope waves at top panel
+         */
+        function drawOscilloscope() {
+            if (oscCanvas.width !== oscCanvas.clientWidth || oscCanvas.height !== oscCanvas.clientHeight) {
+                oscCanvas.width = oscCanvas.clientWidth;
+                oscCanvas.height = oscCanvas.clientHeight;
+            }
+
+            const width = oscCanvas.width;
+            const height = oscCanvas.height;
+            octx.clearRect(0, 0, width, height);
+
+            // Draw clean subtle gridlines
+            octx.strokeStyle = 'rgba(15, 23, 42, 0.4)';
+            octx.lineWidth = 1;
+            for (let i = 0; i < width; i += 40) {
+                octx.beginPath(); octx.moveTo(i, 0); octx.lineTo(i, height); octx.stroke();
+            }
+            for (let j = 0; j < height; j += 20) {
+                octx.beginPath(); octx.moveTo(0, j); octx.lineTo(width, j); octx.stroke();
+            }
+
+            const status = getTuningStatus();
+            const time = Date.now() * 0.005;
+
+            // Target Waveform (Reference)
+            const targetNode = LEVELS[currentLevelIndex].nodes[currentNodeIndex];
+            const targetFreq = targetNode.frequency;
+
+            octx.lineWidth = 2;
+
+            if (joystickActive) {
+                // Draw Target Reference Wave (Dim Golden Green)
+                octx.strokeStyle = 'rgba(16, 185, 129, 0.35)';
+                octx.beginPath();
+                for (let x = 0; x < width; x++) {
+                    const y = height / 2 + Math.sin(x * 0.05 + time) * 15;
+                    if (x === 0) octx.moveTo(x, y);
+                    else octx.lineTo(x, y);
+                }
+                octx.stroke();
+
+                // Draw Player Wave (Blue / Red depending on offset detune)
+                const isVeryBad = status.deltaRatio > 0.6;
+                octx.strokeStyle = isVeryBad 
+                    ? `rgba(239, 68, 68, 0.75)` // Creepy warning red
+                    : `rgba(59, 130, 246, 0.75)`; // Searching blue
+
+                // Frequency factor based on relative tuning octaves
+                const freqScalingFactor = 0.05 * Math.pow(2, status.octaveOffset);
+
+                octx.beginPath();
+                for (let x = 0; x < width; x++) {
+                    // Phase aligns progressively as delta drops to 0
+                    const phaseShift = time * (status.actualFreq / targetFreq);
+                    const y = height / 2 + Math.sin(x * freqScalingFactor + phaseShift) * 15;
+                    if (x === 0) octx.moveTo(x, y);
+                    else octx.lineTo(x, y);
+                }
+                octx.stroke();
+
+                // Draw Combined Perfect Wave when locked (Blends into glowing green)
+                if (status.isAligned) {
+                    octx.strokeStyle = '#22c55e';
+                    octx.lineWidth = 3;
+                    octx.beginPath();
+                    for (let x = 0; x < width; x++) {
+                        const y = height / 2 + Math.sin(x * 0.05 + time) * (15 + Math.sin(time*3)*2);
+                        if (x === 0) octx.moveTo(x, y);
+                        else octx.lineTo(x, y);
+                    }
+                    octx.stroke();
+                }
+            } else {
+                // Standby Silent Wave (Flat line)
+                octx.strokeStyle = 'rgba(75, 85, 99, 0.4)';
+                octx.beginPath();
+                octx.moveTo(0, height / 2);
+                octx.lineTo(width, height / 2);
+                octx.stroke();
+            }
+        }
+
+        let stepProgress = 0; // Steps taken in correct direction
+
+        /**
+         * Update game logic inside the central animation loop
+         */
+        function updateLogic() {
+            if (!gameActive) return;
+
+            const status = getTuningStatus();
+
+            if (joystickActive) {
+                // Resume and update audio frequency smoothly
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+                
+                // Mute override check
+                const vol = isMuted ? 0 : 0.25;
+
+                // Modulate Synth pitch based on joystick navigation
+                playerOsc.frequency.setTargetAtTime(status.actualFreq, audioCtx.currentTime, 0.05);
+                playerGain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.1);
+
+                // If perfectly tuned, enable harmonious overtones
+                if (status.isAligned) {
+                    const targetNode = LEVELS[currentLevelIndex].nodes[currentNodeIndex];
+                    // Sub-octave resonance for deep feedback
+                    harmonyOsc.frequency.setTargetAtTime(targetNode.frequency * 1.5, audioCtx.currentTime, 0.05);
+                    harmonyGain.gain.setTargetAtTime(vol * 0.7, audioCtx.currentTime, 0.15);
+                } else {
+                    harmonyGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+                }
+
+                // 當理智開始下降（偏離嚴重）時，底音才會漸漸變大，作為動態危險警報
+                if (status.deltaRatio > 0.5) {
+                    const scareFactor = (status.deltaRatio - 0.5) * 2.0; // scales 0 to 1
+                    const droneVol = isMuted ? 0 : (0.01 + scareFactor * 0.35); // 從幾乎靜音(0.01)漸漸放大到警戒音量
+                    droneGain.gain.setTargetAtTime(droneVol, audioCtx.currentTime, 0.15);
+                } else {
+                    droneGain.gain.setTargetAtTime(isMuted ? 0 : 0.01, audioCtx.currentTime, 0.3); // 平常保持極低、難以察覺的音量
+                }
+
+                // Handle Sanity Depletion
+                if (status.deltaRatio > 0.65) {
+                    // Out of tune = loss of sanity
+                    const drainSpeed = (status.deltaRatio - 0.65) * 0.45;
+                    sanity -= drainSpeed;
+                    if (sanity < 0) sanity = 0;
+                    
+                    // Show panic vignette borders
+                    dangerPulse.style.borderColor = `rgba(220, 38, 38, ${0.1 + (status.deltaRatio - 0.65) * 2})`;
+                } else {
+                    // Regain sanity slowly when in tune/not terribly off
+                    sanity = Math.min(100, sanity + 0.1);
+                    dangerPulse.style.borderColor = 'rgba(220, 38, 38, 0)';
+                }
+
+                // Spawning Spooky Lurkers & Blinking Eyes
+                handleCreepyEyes(status.deltaRatio);
+
+                // Handle Checkpoint Progress Mechanics
+                if (status.isAligned) {
+                    // Joystick strength acts as speed
+                    const dragStrength = Math.sqrt(joystickVector.x*joystickVector.x + joystickVector.y*joystickVector.y) / maxJoystickDrag;
+                    stepProgress += dragStrength * 0.6; // Increment maze progress
+
+                    gameToast.innerText = "找到共鳴！保持前進...";
+                    gameToast.style.opacity = "1";
+
+                    // Finished current segment/checkpoint
+                    if (stepProgress >= 100) {
+                        advanceNode();
+                    }
+                } else {
+                    gameToast.style.opacity = "0";
+                    // Slowly lose progress if you let go or steer away
+                    stepProgress = Math.max(0, stepProgress - 0.15);
+                }
+
+            } else {
+                // Joystick released - mute navigator & reset volumes
+                if (playerGain) playerGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.2);
+                if (harmonyGain) harmonyGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+                if (droneGain) droneGain.gain.setTargetAtTime(isMuted ? 0 : 0.01, audioCtx.currentTime, 0.3); // 放開搖桿時也恢復幾乎無聲
+                
+                dangerPulse.style.borderColor = 'rgba(220, 38, 38, 0)';
+                gameToast.style.opacity = "0";
+                
+                stepProgress = Math.max(0, stepProgress - 0.3);
+            }
+
+            // Sync Sanity indicators
+            sanityBar.style.width = `${sanity}%`;
+            sanityText.innerText = `${Math.floor(sanity)}%`;
+
+            // Accessibility Tuner Indicator Update
+            if (visualAssist) {
+                const shiftPercentage = (status.octaveOffset + 1) * 50; // Map -1..1 to 0%..100%
+                tunerNeedle.style.left = `${Math.max(2, Math.min(98, shiftPercentage))}%`;
+            }
+
+            // Game Over Triggers
+            if (sanity <= 0) {
+                triggerJumpscare();
+            }
+        }
+
+        /**
+         * Move forward to the next note/room in the maze
+         */
+        function advanceNode() {
+            stepProgress = 0;
+            playSuccessChime();
+
+            const currentLvl = LEVELS[currentLevelIndex];
+            
+            // Spawn temporary flash particles for visual celebration
+            for (let k = 0; k < 30; k++) {
+                particles.push({
+                    x: gameWidth / 2,
+                    y: gameHeight / 2,
+                    size: Math.random() * 4 + 2,
+                    speedX: (Math.random() - 0.5) * 8,
+                    speedY: (Math.random() - 0.5) * 8,
+                    alpha: 1
+                });
+            }
+
+            if (currentNodeIndex < currentLvl.nodes.length - 1) {
+                // Advance to next room frequency
+                currentNodeIndex++;
+                updateUI();
+                showTemporaryToast("突破障礙！尋找下個共振音");
+            } else {
+                // Level Cleared entirely!
+                if (currentLevelIndex < LEVELS.length - 1) {
+                    currentLevelIndex++;
+                    currentNodeIndex = 0;
+                    updateDroneTone();
+                    updateUI();
+                    showTemporaryToast(`【通關】進入下一關：${LEVELS[currentLevelIndex].name}`);
+                } else {
+                    // Defeated the whole sound maze
+                    triggerWinGame();
+                }
+            }
+        }
+
+        /**
+         * Update textual labels throughout UI
+         */
+        function updateUI() {
+            const lvl = LEVELS[currentLevelIndex];
+            const node = lvl.nodes[currentNodeIndex];
+
+            levelIndicator.innerText = `LEVEL ${currentLevelIndex + 1}`;
+            levelName.innerText = lvl.name;
+            targetNoteText.innerText = `${node.note} (${node.frequency} Hz)`;
+        }
+
+        function showTemporaryToast(message) {
+            gameToast.innerText = message;
+            gameToast.style.opacity = "1";
+            setTimeout(() => {
+                gameToast.style.opacity = "0";
+            }, 3000);
+        }
+
+        /**
+         * Restarting/Resetting the current level due to game-over or manual trigger
+         */
+        function resetGame(fullReset = false) {
+            if (fullReset) {
+                currentLevelIndex = 0;
+            }
+            currentNodeIndex = 0;
+            sanity = 100;
+            stepProgress = 0;
+            joystickActive = false;
+            creepyEyes.length = 0;
+            
+            // Reset knob position
+            joystickKnob.style.transform = 'translate(0px, 0px)';
+            joystickVector = { x: 0, y: 0 };
+
+            updateDroneTone();
+            updateUI();
+            
+            jumpscareScreen.classList.add('hidden');
+            gameActive = true;
+        }
+
+        /**
+         * Trigger Jumpscare Screamer (Creepy Face + Shrieking Tone)
+         */
+        function triggerJumpscare() {
+            gameActive = false;
+            joystickActive = false;
+            
+            // Mute background synths immediately
+            if (playerGain) playerGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            if (harmonyGain) harmonyGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            if (droneGain) droneGain.gain.setValueAtTime(0, audioCtx.currentTime);
+
+            playJumpscareSound();
+
+            // Display horrifying screamer face with shake effects
+            jumpscareScreen.classList.remove('hidden');
+            let shakes = 0;
+            const shakeInterval = setInterval(() => {
+                const ox = (Math.random() - 0.5) * 35;
+                const oy = (Math.random() - 0.5) * 35;
+                ghostFace.style.transform = `translate(${ox}px, ${oy}px) scale(${1 + shakes * 0.05})`;
+                shakes++;
+                if (shakes > 25) {
+                    clearInterval(shakeInterval);
+                    // Automatically restart level after screamer finishes
+                    setTimeout(() => {
+                        resetGame(false);
+                    }, 2000);
+                }
+            }, 50);
+        }
+
+        /**
+         * Display Victorious Win screen overlay
+         */
+        function triggerWinGame() {
+            gameActive = false;
+            joystickActive = false;
+            
+            // Ambient celebratory harmony
+            if (playerGain) playerGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            if (harmonyGain) harmonyGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            if (droneGain) droneGain.gain.setValueAtTime(0, audioCtx.currentTime);
+
+            // Pop up Start Overlay styled as a Winner's Screen
+            startOverlay.classList.remove('pointer-events-none');
+            startOverlay.style.opacity = "0.98";
+            
+            const title = startOverlay.querySelector('h1');
+            const sub = startOverlay.querySelector('.text-xs');
+            const instructions = startOverlay.querySelector('.flex-1');
+            
+            sub.innerText = "🎉 恭喜！你成功逃離了黑暗迷宮 🎉";
+            title.innerText = "VICTORY";
+            title.className = "text-5xl font-orbitron font-black text-emerald-400 tracking-wider mb-2 glow-text-green";
+            
+            instructions.innerHTML = `
+                <div class="bg-gray-900/80 p-6 rounded-2xl border border-emerald-800 text-center text-sm text-gray-200">
+                    <p class="font-bold text-emerald-400 text-lg mb-2">聲音迷宮大師</p>
+                    <p class="mb-4">你敏銳的聽覺引導你穿越了樹海、深淵、以及危險的幻音迷廊。</p>
+                    <p class="text-xs text-gray-400">你戰勝了黑暗中的未知恐懼，並重獲新生！</p>
+                </div>
+            `;
+            
+            btnStart.innerHTML = `<i class="fa-solid fa-arrow-rotate-left mr-2"></i> 再玩一次`;
+            btnStart.onclick = () => {
+                location.reload(); // Hard reload for clean restart
+            };
+        }
+
+        /**
+         * Calculate input coordinates & apply boundaries
+         */
+        function handleJoystickMove(clientX, clientY) {
+            const rect = joystickBoundary.getBoundingClientRect();
+            joystickCenter = {
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2
+            };
+
+            // Vector from center of trackpad
+            let dx = clientX - joystickCenter.x;
+            let dy = clientY - joystickCenter.y;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+
+            // Clamp knob position inside joystick circle
+            if (distance > maxJoystickDrag) {
+                dx = (dx / distance) * maxJoystickDrag;
+                dy = (dy / distance) * maxJoystickDrag;
+            }
+
+            joystickVector = { x: dx, y: dy };
+            
+            // Translate visually
+            joystickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+
+            // Update status readout text
+            const angleDeg = Math.floor((Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360);
+            const dragPercent = Math.floor((Math.sqrt(dx*dx + dy*dy) / maxJoystickDrag) * 100);
+            joystickValueText.innerText = `ANGLE: ${angleDeg}° | ACCEL: ${dragPercent}%`;
+
+            // Style visual feedback colors depending on tuning
+            const status = getTuningStatus();
+            if (status.isAligned) {
+                joystickAura.className = "absolute inset-0 rounded-full opacity-30 bg-emerald-500 transition-colors";
+            } else if (status.deltaRatio > 0.65) {
+                joystickAura.className = "absolute inset-0 rounded-full opacity-30 bg-red-600 transition-colors";
+            } else {
+                joystickAura.className = "absolute inset-0 rounded-full opacity-20 bg-blue-500 transition-colors";
+            }
+        }
+
+        // Mouse listeners
+        joystickBoundary.addEventListener('mousedown', (e) => {
+            if (!gameActive) return;
+            joystickActive = true;
+            handleJoystickMove(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!joystickActive) return;
+            handleJoystickMove(e.clientX, e.clientY);
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (!joystickActive) return;
+            joystickActive = false;
+            joystickKnob.style.transform = 'translate(0px, 0px)';
+            joystickVector = { x: 0, y: 0 };
+            joystickValueText.innerText = `ANGLE: 0° | SHIFT: 0%`;
+            joystickAura.className = "absolute inset-0 rounded-full opacity-10 bg-gray-800";
+        });
+
+        // Touch mobile gestures
+        joystickBoundary.addEventListener('touchstart', (e) => {
+            if (!gameActive) return;
+            joystickActive = true;
+            const touch = e.touches[0];
+            handleJoystickMove(touch.clientX, touch.clientY);
+            e.preventDefault();
+        }, { passive: false });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!joystickActive) return;
+            const touch = e.touches[0];
+            handleJoystickMove(touch.clientX, touch.clientY);
+        }, { passive: true });
+
+        window.addEventListener('touchend', () => {
+            if (!joystickActive) return;
+            joystickActive = false;
+            joystickKnob.style.transform = 'translate(0px, 0px)';
+            joystickVector = { x: 0, y: 0 };
+            joystickValueText.innerText = `ANGLE: 0° | SHIFT: 0%`;
+            joystickAura.className = "absolute inset-0 rounded-full opacity-10 bg-gray-800";
+        });
+
+        // Start Game Click
+        btnStart.addEventListener('click', () => {
+            initAudio();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            
+            // Hide start panel
+            startOverlay.classList.add('pointer-events-none');
+            startOverlay.style.opacity = "0";
+            
+            gameActive = true;
+            updateUI();
+        });
+
+        // Play Reference Target Cue Tone
+        btnListen.addEventListener('click', (e) => {
+            e.stopPropagation();
+            playTargetCue();
+        });
+
+        // Visual Assist Mode (Shows a pitch meter gauge below wave visualizer)
+        btnVisualAssist.addEventListener('click', (e) => {
+            e.stopPropagation();
+            visualAssist = !visualAssist;
+            if (visualAssist) {
+                tunerAssist.classList.remove('opacity-0');
+                btnVisualAssist.innerHTML = '<i class="fa-solid fa-eye text-xs text-emerald-400"></i>';
+            } else {
+                tunerAssist.classList.add('opacity-0');
+                btnVisualAssist.innerHTML = '<i class="fa-solid fa-eye-slash text-xs"></i>';
+            }
+        });
+
+        // Mute / Unmute
+        btnMute.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isMuted = !isMuted;
+            if (isMuted) {
+                btnMute.innerHTML = '<i class="fa-solid fa-volume-xmark text-xs text-red-500"></i>';
+                if (masterGain) masterGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+            } else {
+                btnMute.innerHTML = '<i class="fa-solid fa-volume-high text-xs"></i>';
+                if (masterGain) masterGain.gain.setTargetAtTime(0.4, audioCtx.currentTime, 0.05);
+            }
+        });
+
+        // Reset Manual Request
+        btnReset.addEventListener('click', (e) => {
+            e.stopPropagation();
+            resetGame(true);
+        });
+
+        /**
+         * The central execution tick loop
+         */
+        function loop() {
+            updateLogic();
+            drawViewport();
+            drawOscilloscope();
+            requestAnimationFrame(loop);
+        }
+
+        // Execute on Load
+        window.onload = function() {
+            // Initiate loops immediately
+            loop();
+        };
+    </script>
+</body>
+</html>
