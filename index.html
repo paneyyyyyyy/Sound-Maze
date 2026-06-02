@@ -62,7 +62,7 @@
         
         <div id="vignette" class="absolute inset-0 z-30 pointer-events-none rounded-[36px] bg-radial-gradient"></div>
 
-        <div id="whiteout-overlay" class="absolute inset-0 z-[60] bg-white pointer-events-none opacity-0 transition-opacity duration-1000"></div>
+        <div id="whiteout-overlay" class="absolute inset-0 z-50 bg-white pointer-events-none opacity-0 transition-opacity duration-1000 rounded-[36px]"></div>
 
         <div id="jumpscare-screen" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center hidden pointer-events-none">
             <div class="text-red-600 font-orbitron text-4xl font-extrabold tracking-widest animate-bounce mb-4 glow-text-red">LOST IN DARKNESS</div>
@@ -84,14 +84,14 @@
             <div id="game-instructions-box" class="flex-1 flex flex-col justify-center max-w-xs space-y-4 my-4">
                 <div class="bg-gray-900/60 p-4 rounded-2xl border border-gray-800/80 text-left text-xs text-gray-300 leading-relaxed">
                     <p class="font-semibold text-emerald-400 mb-2 font-orbitron"><i class="fa-solid fa-circle-info mr-1"></i> 遊戲世界觀 & 規則：</p>
-                    <p class="mb-2">你受困於一座伸手不見五指的黑暗迷宮。這裡的題目、頻率與出口方向皆為「隨機生成」。</p>
-                    <p class="mb-2"><span class="text-emerald-400 font-semibold">目標：</span>拖曳下方的 360° 虛擬搖桿，尋找與上方「目標頻率」完全一致的聲音。</p>
-                    <p class="mb-1"><span class="text-yellow-400 font-semibold">⚠️ 核心硬核規則：</span></p>
+                    <p class="mb-2">你受困於一座伸手不見五指的黑暗迷宮。這裡的題目、頻率與正確共鳴點皆為**「完全隨機生成」**。</p>
+                    <p class="mb-2"><span class="text-emerald-400 font-semibold">目標：</span>左右拖曳下方的**「線性調節滑桿」**，尋找與上方目標音調產生共鳴的位置。</p>
+                    <p class="mb-1"><span class="text-yellow-400 font-semibold">⚠️ 硬核生存規則：</span></p>
                     <ul class="list-disc list-inside space-y-1 pl-1 text-red-300">
-                        <li>拖曳搖桿時，只要「沒有鎖定共鳴」，SAN 值血量就會持續扣減！</li>
-                        <li>放開搖桿時，扣血將會暫停。</li>
-                        <li>聲音偏高 (Sharp) 👉 偏向右側 | 聲音偏低 (Flat) 👉 偏向左側</li>
-                        <li>鎖定共鳴時請穩定維持 5 秒以突破迷宮。</li>
+                        <li>**拖曳滑桿時，只要「沒有鎖定共鳴點」，SAN值血量就會持續扣減！**</li>
+                        <li>放開滑桿滑鈕時，扣血將會立刻暫停，提供喘息空間。</li>
+                        <li>滑桿由左至右 ➔ 聲音由低變高 (Flat to Sharp)。</li>
+                        <li>對準共鳴點時，請保持不動**維持 5 秒**以破解迷宮出口。</li>
                     </ul>
                 </div>
             </div>
@@ -110,9 +110,6 @@
                 <div class="flex items-center gap-2">
                     <button id="btn-visual-assist" class="w-8 h-8 rounded-lg bg-gray-800/80 text-gray-400 hover:text-emerald-400 flex items-center justify-center transition" title="輔助模式">
                         <i class="fa-solid fa-eye-slash text-xs"></i>
-                    </button>
-                    <button id="btn-mute" class="w-8 h-8 rounded-lg bg-gray-800/80 text-gray-400 hover:text-emerald-400 flex items-center justify-center transition" title="靜音">
-                        <i class="fa-solid fa-volume-high text-xs"></i>
                     </button>
                     <button id="btn-reset" class="w-8 h-8 rounded-lg bg-gray-800/80 text-gray-400 hover:text-red-400 flex items-center justify-center transition" title="重來">
                         <i class="fa-solid fa-rotate-left text-xs"></i>
@@ -145,9 +142,9 @@
                 
                 <div id="tuner-assist" class="absolute inset-x-0 bottom-1 flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
                     <div class="flex items-center justify-between w-4/5 text-[9px] text-gray-500 font-orbitron">
-                        <span>FLAT</span>
+                        <span>FLAT (低)</span>
                         <span class="text-emerald-400 font-bold">HARMONY</span>
-                        <span>SHARP</span>
+                        <span>SHARP (高)</span>
                     </div>
                     <div class="w-4/5 h-1.5 bg-gray-900 rounded-full relative mt-0.5 border border-gray-800">
                         <div id="tuner-needle" class="absolute w-2 h-2.5 bg-yellow-500 rounded-full top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 transition-all duration-75"></div>
@@ -168,20 +165,22 @@
 
         <div class="p-6 bg-gray-900/60 border-t border-gray-900/80 rounded-b-[36px] flex flex-col items-center justify-center z-10 relative">
             <div class="text-center mb-3">
-                <p class="text-[11px] font-orbitron text-gray-400 tracking-wider">拖曳搖桿調整音高並探路</p>
-                <p id="joystick-value" class="text-[10px] font-orbitron text-gray-600">ANGLE: 0° | SHIFT: 0%</p>
+                <p class="text-[11px] font-orbitron text-gray-400 tracking-wider">左右拖曳滑鈕微調共鳴音調</p>
+                <p id="joystick-value" class="text-[10px] font-orbitron text-gray-600">PITCH POSITION: 50%</p>
             </div>
 
-            <div id="joystick-boundary" class="relative w-36 h-36 rounded-full bg-gray-950 border-4 border-gray-800 flex items-center justify-center shadow-inner cursor-pointer select-none">
-                <div class="absolute inset-2 rounded-full border border-dashed border-gray-900 flex items-center justify-center pointer-events-none">
-                    <div class="absolute top-1 text-[8px] font-bold text-gray-700 font-orbitron">▲</div>
-                    <div class="absolute bottom-1 text-[8px] font-bold text-gray-700 font-orbitron">▼</div>
+            <div id="slider-boundary" class="relative w-full h-12 bg-gray-950 border-2 border-gray-800 rounded-2xl flex items-center px-4 shadow-inner cursor-pointer select-none">
+                <div class="absolute inset-x-4 h-1 bg-gray-900 rounded flex justify-between items-center pointer-events-none">
+                    <span class="text-[9px] text-gray-600 font-bold font-orbitron">FLAT</span>
+                    <span class="text-[9px] text-gray-700 font-bold font-orbitron">|</span>
+                    <span class="text-[9px] text-gray-600 font-bold font-orbitron">SHARP</span>
                 </div>
 
-                <div id="joystick-aura" class="absolute inset-0 rounded-full opacity-10 transition-colors duration-300 bg-gray-800"></div>
+                <div id="slider-aura" class="absolute inset-0 rounded-2xl opacity-10 transition-colors duration-300 bg-gray-800 pointer-events-none"></div>
 
-                <div id="joystick-knob" class="absolute w-14 h-14 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-600 shadow-lg flex items-center justify-center transition-all duration-75 active:scale-95 z-20">
-                    <div class="w-4 h-4 rounded-full bg-gray-500 shadow-inner"></div>
+                <div id="slider-knob" class="absolute w-12 h-9 rounded-xl bg-gradient-to-b from-gray-700 to-gray-900 border-2 border-gray-500 shadow-xl flex items-center justify-center transition-transform duration-75 active:scale-95 z-20 left-4" style="transform: translateX(0px);">
+                    <div class="w-1.5 h-4 bg-gray-400 rounded-full mx-0.5"></div>
+                    <div class="w-1.5 h-4 bg-gray-400 rounded-full mx-0.5"></div>
                 </div>
             </div>
         </div>
@@ -208,7 +207,6 @@
         let sanity = 100;
         let gameActive = false;
         let visualAssist = false;
-        let isMuted = false;
 
         // Theme Particle System
         const themeParticles = [];
@@ -225,11 +223,9 @@
         let droneGain = null;
         let masterGain = null;
 
-        // Joystick State
-        let joystickActive = false;
-        let joystickCenter = { x: 0, y: 0 };
-        let joystickVector = { x: 0, y: 0 };
-        const maxJoystickDrag = 60;
+        // 滑桿狀態變數
+        let sliderActive = false;
+        let sliderPercent = 0.5; // 當前滑鈕位置 (0 ~ 1)
 
         // Dynamic Viewport Variables
         let basePlayerRadius = 20;
@@ -248,13 +244,12 @@
         const sanityBar = document.getElementById('sanity-bar');
         const sanityText = document.getElementById('sanity-text');
         const btnVisualAssist = document.getElementById('btn-visual-assist');
-        const btnMute = document.getElementById('btn-mute');
         const btnReset = document.getElementById('btn-reset');
         const btnListen = document.getElementById('btn-listen');
-        const joystickKnob = document.getElementById('joystick-knob');
-        const joystickBoundary = document.getElementById('joystick-boundary');
+        const sliderKnob = document.getElementById('slider-knob');
+        const sliderBoundary = document.getElementById('slider-boundary');
         const joystickValueText = document.getElementById('joystick-value');
-        const joystickAura = document.getElementById('joystick-aura');
+        const sliderAura = document.getElementById('slider-aura');
         const oscCanvas = document.getElementById('osc-canvas');
         const gameCanvas = document.getElementById('game-canvas');
         const tunerAssist = document.getElementById('tuner-assist');
@@ -271,18 +266,19 @@
         const octx = oscCanvas.getContext('2d');
 
         /**
-         * 完全隨機生成全新的 5 題關卡資料
+         * 完全隨機生成全新的隨機出題庫
          */
         function generateRandomPool() {
             LEVELS.forEach(lvl => {
                 lvl.nodes = [];
                 for (let i = 0; i < lvl.nodeCount; i++) {
                     const randomNote = NOTE_POOL[Math.floor(Math.random() * NOTE_POOL.length)];
-                    const randomAngle = (Math.random() * Math.PI * 2) - Math.PI;
+                    // 隨機指定一個 15% ~ 85% 之間的滑軌位置作為正確答案
+                    const targetPercent = 0.15 + (Math.random() * 0.7);
                     lvl.nodes.push({
                         frequency: randomNote.freq,
                         note: randomNote.note,
-                        targetAngle: randomAngle
+                        targetPercent: targetPercent
                     });
                 }
             });
@@ -406,24 +402,29 @@
             screech.stop(now + 1.8);
         }
 
+        /**
+         * 改版：根據水平滑動位置計算音調差值
+         */
         function getTuningStatus() {
-            if (!joystickActive) {
-                return { isAligned: false, deltaRatio: 1, freqOffset: 0, actualFreq: 150 };
+            if (!sliderActive) {
+                return { isAligned: false, deltaRatio: 1, freqOffset: 0, actualFreq: 150, octaveOffset: 0 };
             }
 
-            const currentAngle = Math.atan2(joystickVector.y, joystickVector.x);
             const targetNode = LEVELS[currentLevelIndex].nodes[currentNodeIndex];
-            const targetAngle = targetNode.targetAngle;
+            const targetPos = targetNode.targetPercent;
 
-            let angleDiff = currentAngle - targetAngle;
-            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+            // 位置落差
+            const diff = sliderPercent - targetPos;
+            
+            // 將位置落差映射到頻率變化：最左到最右差正負一個八度音程
+            const octaveOffset = diff * 2; 
+            const actualFreq = targetNode.frequency * Math.pow(2, octaveOffset);
 
-            const targetFreq = targetNode.frequency;
-            const octaveOffset = angleDiff / Math.PI; 
-            const actualFreq = targetFreq * Math.pow(2, octaveOffset);
-            const deltaRatio = Math.abs(angleDiff) / Math.PI;
-            const isAligned = Math.abs(angleDiff) < 0.22;
+            // 誤差百分比
+            const deltaRatio = Math.min(1, Math.abs(diff) * 2.5);
+
+            // 共鳴對準範圍 (滑軌差距小於 3% 即算對準)
+            const isAligned = Math.abs(diff) < 0.035;
 
             return { isAligned, deltaRatio, actualFreq, octaveOffset };
         }
@@ -498,7 +499,7 @@
             const playerX = gameWidth / 2;
             const playerY = gameHeight / 2;
 
-            // 1. 環境主題粒子
+            // 1. 環境粒子
             spawnThemeParticles();
             const currentTheme = LEVELS[currentLevelIndex].type;
 
@@ -537,27 +538,12 @@
             if (!this.lightRadius) this.lightRadius = targetLightRadius;
             this.lightRadius += (targetLightRadius - this.lightRadius) * 0.1;
 
-            // 3. 引導方向微光
-            if (status.deltaRatio < 0.5) {
-                const node = LEVELS[currentLevelIndex].nodes[currentNodeIndex];
-                const grad = gctx.createRadialGradient(
-                    playerX + Math.cos(node.targetAngle) * 100, playerY + Math.sin(node.targetAngle) * 100, 10,
-                    playerX, playerY, this.lightRadius * 1.5
-                );
-                const intensity = (1 - status.deltaRatio * 2);
-                if (intensity > 0) {
-                    grad.addColorStop(0, `rgba(16, 185, 129, ${intensity * 0.12})`);
-                    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                    gctx.fillStyle = grad; gctx.fillRect(0, 0, gameWidth, gameHeight);
-                }
-            }
-
-            // 4. 遮罩黑霧
+            // 3. 遮罩黑霧
             const shadowGrad = gctx.createRadialGradient(playerX, playerY, this.lightRadius * 0.2, playerX, playerY, this.lightRadius);
             shadowGrad.addColorStop(0, 'rgba(0, 0, 0, 0)'); shadowGrad.addColorStop(0.5, 'rgba(3, 7, 18, 0.5)'); shadowGrad.addColorStop(1, 'rgba(3, 7, 18, 1)');
             gctx.fillStyle = shadowGrad; gctx.fillRect(0, 0, gameWidth, gameHeight);
 
-            // 5. 怪物紅眼
+            // 4. 紅眼
             creepyEyes.forEach(eye => {
                 if (Math.sqrt((eye.x - playerX)**2 + (eye.y - playerY)**2) < this.lightRadius) return;
                 if (eye.blinkTimer >= 15) {
@@ -570,14 +556,14 @@
                 }
             });
 
-            // 6. 核心原點 (Player Core) - 套用踏步晃動
+            // 5. 核心原點 (Player Core) - 踏步晃動
             basePlayerRadius += (targetPlayerRadius - basePlayerRadius) * 0.1;
             const bobbingPlayerY = playerY + currentBobY;
             
             const playerGrad = gctx.createRadialGradient(playerX, bobbingPlayerY, 1, playerX, bobbingPlayerY, basePlayerRadius);
-            if (status.isAligned && joystickActive) {
+            if (status.isAligned && sliderActive) {
                 playerGrad.addColorStop(0, '#ffffff'); playerGrad.addColorStop(0.3, '#10b981'); playerGrad.addColorStop(1, 'rgba(16, 185, 129, 0)');
-            } else if (!status.isAligned && joystickActive) {
+            } else if (!status.isAligned && sliderActive) {
                 playerGrad.addColorStop(0, '#ffffff'); playerGrad.addColorStop(0.3, '#ef4444'); playerGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
             } else {
                 playerGrad.addColorStop(0, '#ffffff'); playerGrad.addColorStop(0.3, '#3b82f6'); playerGrad.addColorStop(1, 'rgba(59, 130, 246, 0)');
@@ -585,14 +571,7 @@
 
             gctx.save(); gctx.beginPath(); gctx.arc(playerX, bobbingPlayerY, basePlayerRadius, 0, Math.PI * 2); gctx.fillStyle = playerGrad; gctx.fill(); gctx.restore();
 
-            // 7. 方向箭頭
-            if (status.isAligned && joystickActive && !isEndingFlash) {
-                gctx.save(); gctx.translate(playerX, bobbingPlayerY);
-                gctx.rotate(LEVELS[currentLevelIndex].nodes[currentNodeIndex].targetAngle);
-                gctx.strokeStyle = 'rgba(16, 185, 129, 0.7)'; gctx.lineWidth = 3; gctx.beginPath(); gctx.moveTo(35, 0); gctx.lineTo(55, 0); gctx.lineTo(48, -7); gctx.moveTo(55, 0); gctx.lineTo(48, 7); gctx.stroke(); gctx.restore();
-            }
-
-            // 8. 繽盤火花粒子
+            // 6. 繽紛大結局噴發煙火粒子
             if (!gameActive && particles.length > 0) {
                 particles.forEach(p => {
                     p.x += p.vx; p.y += p.vy; p.vy += 0.04; p.alpha -= 0.006;
@@ -612,7 +591,7 @@
             const time = Date.now() * 0.005;
             const targetNode = LEVELS[currentLevelIndex].nodes[currentNodeIndex];
 
-            if (joystickActive) {
+            if (sliderActive) {
                 octx.strokeStyle = 'rgba(16, 185, 129, 0.35)'; octx.lineWidth = 2; octx.beginPath();
                 for (let x = 0; x < width; x++) {
                     const y = height / 2 + Math.sin(x * 0.05 + time) * 15;
@@ -652,56 +631,51 @@
             const status = getTuningStatus();
             const isLastNode = (currentLevelIndex === LEVELS.length - 1) && (currentNodeIndex === LEVELS[currentLevelIndex].nodes.length - 1);
 
-            // ─── 【修改重點 2：放開拖曳鍵暫停扣血】 ───
-            if (joystickActive && !isEndingFlash) {
+            // 【完全修正 2：手握滑鈕時判定】
+            if (sliderActive && !isEndingFlash) {
                 if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-                const vol = isMuted ? 0 : 0.25;
-
+                
                 playerOsc.frequency.setTargetAtTime(status.actualFreq, audioCtx.currentTime, 0.05);
-                playerGain.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.1);
+                playerGain.gain.setTargetAtTime(0.25, audioCtx.currentTime, 0.1);
 
                 if (status.isAligned) {
                     harmonyOsc.frequency.setTargetAtTime(LEVELS[currentLevelIndex].nodes[currentNodeIndex].frequency * 1.5, audioCtx.currentTime, 0.05);
-                    harmonyGain.gain.setTargetAtTime(vol * 0.7, audioCtx.currentTime, 0.15);
+                    harmonyGain.gain.setTargetAtTime(0.18, audioCtx.currentTime, 0.15);
                 } else {
                     harmonyGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
                 }
 
-                // 當玩家手握搖桿卻沒有鎖定共鳴時，持續扣血
+                // 正在拉動但「未對準」共鳴點 ➔ 持續瘋狂扣血
                 if (!status.isAligned) {
                     const drainSpeed = 0.18 + (status.deltaRatio * 0.3);
                     sanity -= drainSpeed;
                     if (sanity < 0) sanity = 0;
                     
                     const scareFactor = status.deltaRatio * 0.4;
-                    droneGain.gain.setTargetAtTime(isMuted ? 0 : (0.01 + scareFactor), audioCtx.currentTime, 0.1);
+                    droneGain.gain.setTargetAtTime(0.01 + scareFactor, audioCtx.currentTime, 0.1);
                     dangerPulse.style.borderColor = `rgba(220, 38, 38, ${0.1 + status.deltaRatio * 1.5})`;
                 } else {
+                    // 對準時 ➔ 緩慢回血
                     sanity = Math.min(100, sanity + 0.08);
-                    droneGain.gain.setTargetAtTime(isMuted ? 0 : 0.01, audioCtx.currentTime, 0.3);
+                    droneGain.gain.setTargetAtTime(0.01, audioCtx.currentTime, 0.3);
                     dangerPulse.style.borderColor = 'rgba(220, 38, 38, 0)';
                 }
 
                 handleCreepyEyes(status.deltaRatio);
 
-                // 走路 / 狂奔晃動
-                const dragStrength = Math.sqrt(joystickVector.x*joystickVector.x + joystickVector.y*joystickVector.y) / maxJoystickDrag;
-                if (dragStrength > 0.1) {
-                    let speedMultiplier = 1.0;
-                    let amplitudeMultiplier = 1.0;
+                // 左右拉動時的步行晃動
+                let speedMultiplier = 1.0;
+                let amplitudeMultiplier = 1.0;
 
-                    if (isLastNode && status.isAligned) {
-                        speedMultiplier = 1.0 + (stepProgress * 0.035);
-                        amplitudeMultiplier = 1.0 + (stepProgress * 0.025);
-                    }
-
-                    walkTimer += dragStrength * 0.15 * speedMultiplier;
-                    currentBobY = Math.abs(Math.sin(walkTimer)) * -8 * dragStrength * amplitudeMultiplier; 
-                } else {
-                    currentBobY += (0 - currentBobY) * 0.1;
+                if (isLastNode && status.isAligned) {
+                    speedMultiplier = 1.0 + (stepProgress * 0.035);
+                    amplitudeMultiplier = 1.0 + (stepProgress * 0.025);
                 }
 
-                // 5秒鎖定前進
+                walkTimer += 0.15 * speedMultiplier;
+                currentBobY = Math.abs(Math.sin(walkTimer)) * -8 * amplitudeMultiplier; 
+
+                // 5秒倒數共鳴
                 if (status.isAligned) {
                     stepProgress += (100 / (60 * 5)); 
                     const remainingSeconds = Math.ceil((100 - stepProgress) / 20);
@@ -723,10 +697,10 @@
                 }
 
             } else {
-                // 【已修改】放開拖曳按鍵後，血量原地鎖定，不再減少基本怠速血量。
+                // 【完全修正 2：放開滑鈕時完全靜音、原位暫停扣血】
                 if (playerGain) playerGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.2);
                 if (harmonyGain) harmonyGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
-                if (droneGain) droneGain.gain.setTargetAtTime(isMuted ? 0 : 0.01, audioCtx.currentTime, 0.3);
+                if (droneGain) droneGain.gain.setTargetAtTime(0.01, audioCtx.currentTime, 0.3);
                 
                 dangerPulse.style.borderColor = 'rgba(220, 38, 38, 0)';
                 gameToast.style.opacity = "0";
@@ -746,6 +720,9 @@
             if (sanity <= 0) triggerJumpscare();
         }
 
+        /**
+         * 晉級下一題：【完全修正 1：立刻補滿 SAN 值為 100】
+         */
         function advanceNode() {
             const currentLvl = LEVELS[currentLevelIndex];
             const isLastNode = (currentLevelIndex === LEVELS.length - 1) && (currentNodeIndex === LEVELS[currentLevelIndex].nodes.length - 1);
@@ -759,7 +736,7 @@
             themeParticles.length = 0; 
             playSuccessChime();
 
-            // ─── 【修改重點 1：進入下一題重置 SAN 回到 100】 ───
+            // 換下一題重置 SAN 到 100%
             sanity = 100;
 
             for (let k = 0; k < 30; k++) {
@@ -773,7 +750,7 @@
             if (currentNodeIndex < currentLvl.nodes.length - 1) {
                 currentNodeIndex++;
                 updateUI();
-                showTemporaryToast("突破障礙！尋下個隨機音節");
+                showTemporaryToast("突破障礙！尋下個隨機共鳴點");
             } else {
                 if (currentLevelIndex < LEVELS.length - 1) {
                     currentLevelIndex++;
@@ -786,16 +763,16 @@
         }
 
         /**
-         * 修正後：出口白光融滿全螢幕大結局（防止圓角裁剪邊界殘留）
+         * 【完全修復裁剪 Bug】白光融滿全螢幕大結局
          */
         function triggerEndingSequence() {
             gameActive = false;
-            joystickActive = false;
+            sliderActive = false;
             isEndingFlash = true;
 
             targetPlayerRadius = gameWidth * 1.6;
 
-            // 純白亮起閃光層 (將白光拉到最高 z-index，完全覆蓋整個框架內部)
+            // 純白亮起大結局閃光層
             whiteoutOverlay.style.opacity = "1";
 
             setTimeout(() => {
@@ -831,36 +808,41 @@
             setTimeout(() => { gameToast.style.opacity = "0"; }, 3000);
         }
 
+        /**
+         * 【修復重新開始當機問題】優化重啟清理流程
+         */
         function resetGame(fullReset = false) {
+            gameActive = false;
+            sliderActive = false;
+            isEndingFlash = false;
+            
             if (fullReset) currentLevelIndex = 0;
             currentNodeIndex = 0;
             sanity = 100;
             stepProgress = 0;
-            joystickActive = false;
-            isEndingFlash = false;
             basePlayerRadius = 20;
             targetPlayerRadius = 20;
+            sliderPercent = 0.5; // 滑鈕歸中
+            
             creepyEyes.length = 0;
             themeParticles.length = 0;
             particles.length = 0;
             
-            joystickKnob.style.transform = 'translate(0px, 0px)';
-            joystickVector = { x: 0, y: 0 };
+            // 重置滑鈕位置
+            updateSliderPositionVisual();
 
-            // 確保覆蓋遮罩完全隱藏且不阻擋點擊
+            // 隱藏白光與恐嚇層，重置選單遮罩與最高層級點擊
+            whiteoutOverlay.style.opacity = "0";
+            jumpscareScreen.classList.add('hidden');
             startOverlay.classList.remove('pointer-events-none');
             startOverlay.className = "absolute inset-0 z-40 bg-gray-950/95 flex flex-col items-center justify-between p-8 text-center rounded-[36px] transition-all duration-500";
             
-            // 重置白光與爆笑螢幕
-            whiteoutOverlay.style.opacity = "0";
-            jumpscareScreen.classList.add('hidden');
-
             gameTitle.innerText = "SOUND MAZE";
             gameTitle.className = "text-4xl font-orbitron font-black text-gray-100 tracking-wider mb-2 glow-text-green";
             gameSubtitle.innerText = "ATMOSPHERIC AUDIO ADVENTURE";
             gameSubtitle.className = "text-xs font-orbitron text-emerald-500 tracking-widest mb-1";
 
-            generateRandomPool(); // 重新洗牌隨機出題
+            generateRandomPool(); // 重新洗牌出題
             updateDroneTone();
             updateUI();
             
@@ -869,7 +851,7 @@
 
         function triggerJumpscare() {
             gameActive = false;
-            joystickActive = false;
+            sliderActive = false;
             
             if (playerGain) playerGain.gain.setValueAtTime(0, audioCtx.currentTime);
             if (harmonyGain) harmonyGain.gain.setValueAtTime(0, audioCtx.currentTime);
@@ -892,9 +874,8 @@
         function triggerWinGame() {
             if (playerGain) playerGain.gain.setValueAtTime(0, audioCtx.currentTime);
             if (harmonyGain) harmonyGain.gain.setValueAtTime(0, audioCtx.currentTime);
-            if (droneGain) droneGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            if (droneGain) playerGain.gain.setValueAtTime(0, audioCtx.currentTime);
 
-            // 勝利選單浮現，並開啟勝利動態漸層背景
             startOverlay.classList.remove('pointer-events-none');
             startOverlay.style.opacity = "0.98";
             startOverlay.classList.add('victory-bg');
@@ -906,70 +887,103 @@
             
             gameInstructionsBox.innerHTML = `
                 <div class="bg-gray-950/80 p-6 rounded-2xl border-2 border-pink-500/50 text-center text-sm text-gray-100 backdrop-blur-md shadow-[0_0_25px_rgba(219,39,119,0.3)]">
-                    <p class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-pink-500 to-purple-500 text-xl mb-3 font-orbitron">未知迷宮·完美突破</p>
+                    <p class="font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-pink-500 to-purple-500 text-xl mb-3 font-orbitron">未知迷宮·隨機突破</p>
                     <p class="mb-4 text-xs text-gray-300 leading-relaxed">
-                        白光完美撕裂了寂靜。每一次的迷宮都是獨一無二的未知，而你用超越常人的直覺與聽覺戰勝了隨機的宿命。
+                        白光完美釋放了壓力。你用驚人的敏銳度左右拆解音高，成功戰勝了這場隨機的硬核試煉！
                     </p>
                     <p class="text-sm font-semibold text-emerald-400 glow-text-green">
-                        世界重回斑斕，你自由了！
+                        世界重新充滿繽紛色彩，你自由了！
                     </p>
                 </div>
             `;
             
-            btnStart.innerHTML = `<i class="fa-solid fa-arrow-rotate-left mr-2"></i> 挑戰下一場隨機迷宮`;
+            btnStart.innerHTML = `<i class="fa-solid fa-arrow-rotate-left mr-2"></i> 再闖一場隨機音高`;
             btnStart.className = "w-full py-4 bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 hover:brightness-110 active:scale-95 text-white font-orbitron font-bold text-lg rounded-2xl transition-all duration-300 shadow-xl";
             btnStart.onclick = () => {
                 resetGame(true); 
             };
         }
 
-        function handleJoystickMove(clientX, clientY) {
-            const rect = joystickBoundary.getBoundingClientRect();
-            joystickCenter = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        /**
+         * 新滑軌水平拖曳位移計算
+         */
+        function handleSliderMove(clientX) {
+            const rect = sliderBoundary.getBoundingClientRect();
+            // 滑軌可用寬度 (扣除滑鈕左右寬度的一半緩衝，確保不會溢出)
+            const padding = 24; 
+            const minX = rect.left + padding;
+            const maxX = rect.right - padding;
+            const availableWidth = maxX - minX;
 
-            let dx = clientX - joystickCenter.x; let dy = clientY - joystickCenter.y;
-            const distance = Math.sqrt(dx*dx + dy*dy);
-            if (distance > maxJoystickDrag) {
-                dx = (dx / distance) * maxJoystickDrag; dy = (dy / distance) * maxJoystickDrag;
-            }
+            let currentX = clientX - minX;
+            // 限制在滑軌百分比 0 ~ 1 之間
+            let percent = currentX / availableWidth;
+            if (percent < 0) percent = 0;
+            if (percent > 1) percent = 1;
 
-            joystickVector = { x: dx, y: dy };
-            joystickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+            sliderPercent = percent;
+            updateSliderPositionVisual();
 
-            const angleDeg = Math.floor((Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360);
-            const dragPercent = Math.floor((Math.sqrt(dx*dx + dy*dy) / maxJoystickDrag) * 100);
-            joystickValueText.innerText = `ANGLE: ${angleDeg}° | ACCEL: ${dragPercent}%`;
+            // 介面微調更新
+            const readPercent = Math.floor(percent * 100);
+            joystickValueText.innerText = `PITCH POSITION: ${readPercent}%`;
 
             const status = getTuningStatus();
             if (status.isAligned) {
-                joystickAura.className = "absolute inset-0 rounded-full opacity-30 bg-emerald-500 transition-colors";
+                sliderAura.className = "absolute inset-0 rounded-2xl opacity-30 bg-emerald-500 transition-colors";
             } else {
-                joystickAura.className = "absolute inset-0 rounded-full opacity-20 bg-red-600 transition-colors";
+                sliderAura.className = "absolute inset-0 rounded-2xl opacity-20 bg-red-600 transition-colors";
             }
         }
 
-        // Event listeners
-        joystickBoundary.addEventListener('mousedown', (e) => { if (!gameActive) return; joystickActive = true; handleJoystickMove(e.clientX, e.clientY); });
-        window.addEventListener('mousemove', (e) => { if (!joystickActive) return; handleJoystickMove(e.clientX, e.clientY); });
+        function updateSliderPositionVisual() {
+            // 滑鈕寬度是 48px，利用百分比動態調整 left 位移
+            sliderKnob.style.left = `calc(${sliderPercent * 100}% - ${sliderPercent * 48}px)`;
+        }
+
+        // 滑軌水平事件監聽
+        sliderBoundary.addEventListener('mousedown', (e) => {
+            if (!gameActive || isEndingFlash) return;
+            sliderActive = true;
+            handleSliderMove(e.clientX);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!sliderActive) return;
+            handleSliderMove(e.clientX);
+        });
+
         window.addEventListener('mouseup', () => {
-            if (!joystickActive) return; joystickActive = false;
-            joystickKnob.style.transform = 'translate(0px, 0px)'; joystickVector = { x: 0, y: 0 };
-            joystickValueText.innerText = `ANGLE: 0° | SHIFT: 0%`; joystickAura.className = "absolute inset-0 rounded-full opacity-10 bg-gray-800";
+            if (!sliderActive) return;
+            sliderActive = false;
+            sliderAura.className = "absolute inset-0 rounded-2xl opacity-10 bg-gray-800";
         });
 
-        joystickBoundary.addEventListener('touchstart', (e) => { if (!gameActive) return; joystickActive = true; handleJoystickMove(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }, { passive: false });
-        window.addEventListener('touchmove', (e) => { if (!joystickActive) return; handleJoystickMove(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+        // 手機觸控水平拖曳
+        sliderBoundary.addEventListener('touchstart', (e) => {
+            if (!gameActive || isEndingFlash) return;
+            sliderActive = true;
+            handleSliderMove(e.touches[0].clientX);
+            e.preventDefault();
+        }, { passive: false });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!sliderActive) return;
+            handleSliderMove(e.touches[0].clientX);
+        }, { passive: true });
+
         window.addEventListener('touchend', () => {
-            if (!joystickActive) return; joystickActive = false;
-            joystickKnob.style.transform = 'translate(0px, 0px)'; joystickVector = { x: 0, y: 0 };
-            joystickAura.className = "absolute inset-0 rounded-full opacity-10 bg-gray-800";
+            if (!sliderActive) return;
+            sliderActive = false;
+            sliderAura.className = "absolute inset-0 rounded-2xl opacity-10 bg-gray-800";
         });
 
+        // 遊戲開始按鍵點擊
         btnStart.addEventListener('click', () => {
             initAudio();
             if (audioCtx.state === 'suspended') audioCtx.resume();
             
-            // 選單淡出時，加上 pointer-events-none 確保它「完全隱形不攔截點擊」
+            // 開啟 pointer-events-none，防止隱形選單攔截右上角按鈕
             startOverlay.classList.add('pointer-events-none'); 
             startOverlay.style.opacity = "0";
             
@@ -986,17 +1000,6 @@
                 tunerAssist.classList.remove('opacity-0'); btnVisualAssist.innerHTML = '<i class="fa-solid fa-eye text-xs text-emerald-400"></i>';
             } else {
                 tunerAssist.classList.add('opacity-0'); btnVisualAssist.innerHTML = '<i class="fa-solid fa-eye-slash text-xs"></i>';
-            }
-        });
-        
-        btnMute.addEventListener('click', (e) => {
-            e.stopPropagation(); isMuted = !isMuted;
-            if (isMuted) {
-                btnMute.innerHTML = '<i class="fa-solid fa-volume-xmark text-xs text-red-500"></i>';
-                masterGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
-            } else {
-                btnMute.innerHTML = '<i class="fa-solid fa-volume-high text-xs"></i>';
-                masterGain.gain.setTargetAtTime(0.4, audioCtx.currentTime, 0.05);
             }
         });
         
