@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sound Maze - 聲音迷宮</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts for premium cyberpunk typography -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -61,16 +58,12 @@
 </head>
 <body class="flex items-center justify-center min-h-screen p-2 md:p-6 overflow-hidden">
 
-    <!-- Main Smartphone Wrapper -->
     <div class="relative w-full max-w-md h-[92vh] max-h-[850px] bg-gray-950 rounded-[40px] border-4 border-gray-800 shadow-2xl flex flex-col overflow-hidden select-none">
         
-        <!-- Vignette Red Glow Overlay for Scary Moments -->
         <div id="vignette" class="absolute inset-0 z-30 pointer-events-none rounded-[36px] bg-radial-gradient"></div>
 
-        <!-- Fullscreen Whiteout Flash Overlay (出口走出特效) -->
         <div id="whiteout-overlay" class="absolute inset-0 z-50 bg-white pointer-events-none opacity-0 transition-opacity duration-1000 rounded-[36px]"></div>
 
-        <!-- Jumpscare Screen -->
         <div id="jumpscare-screen" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center hidden">
             <div class="text-red-600 font-orbitron text-4xl font-extrabold tracking-widest animate-bounce mb-4 glow-text-red">LOST IN DARKNESS</div>
             <div id="ghost-face" class="w-48 h-48 opacity-90 transition-transform duration-75">
@@ -81,7 +74,6 @@
             <p class="text-gray-400 text-sm mt-6 font-semibold animate-pulse">理智值歸零，已被深淵吞噬...</p>
         </div>
 
-        <!-- Main Menu & Tutorial / Victory Overlay -->
         <div id="start-overlay" class="absolute inset-0 z-40 bg-gray-950/95 flex flex-col items-center justify-between p-8 text-center rounded-[36px] transition-all duration-500">
             <div class="w-full mt-4">
                 <div id="game-subtitle" class="text-xs font-orbitron text-emerald-500 tracking-widest mb-1">ATMOSPHERIC AUDIO ADVENTURE</div>
@@ -89,7 +81,6 @@
                 <div class="h-[2px] w-1/3 bg-emerald-500 mx-auto rounded"></div>
             </div>
 
-            <!-- Game Lore & Instructions -->
             <div id="game-instructions-box" class="flex-1 flex flex-col justify-center max-w-xs space-y-4 my-4">
                 <div class="bg-gray-900/60 p-4 rounded-2xl border border-gray-800/80 text-left text-xs text-gray-300 leading-relaxed">
                     <p class="font-semibold text-emerald-400 mb-2 font-orbitron"><i class="fa-solid fa-circle-info mr-1"></i> 遊戲世界觀 & 規則：</p>
@@ -109,20 +100,17 @@
                 </div>
             </div>
 
-            <!-- Start Button -->
             <button id="btn-start" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-orbitron font-bold text-lg rounded-2xl transition-all duration-300 shadow-lg glow-green transform hover:scale-[1.02]">
                 <i class="fa-solid fa-play mr-2"></i> 進入黑暗迷宮
             </button>
         </div>
 
-        <!-- Header Controls & Level / Sanity Status -->
         <div class="p-4 bg-gray-900/40 border-b border-gray-900 flex flex-col gap-2 z-10">
             <div class="flex justify-between items-center">
                 <div>
                     <span id="level-indicator" class="text-xs font-orbitron text-emerald-500 tracking-wider uppercase font-bold">LEVEL 1</span>
                     <h2 id="level-name" class="text-sm font-semibold text-gray-200">細語樹海</h2>
                 </div>
-                <!-- Controls -->
                 <div class="flex items-center gap-2">
                     <button id="btn-visual-assist" class="w-8 h-8 rounded-lg bg-gray-800/80 text-gray-400 hover:text-emerald-400 flex items-center justify-center transition" title="輔助模式">
                         <i class="fa-solid fa-eye-slash text-xs"></i>
@@ -136,7 +124,6 @@
                 </div>
             </div>
 
-            <!-- Sanity Gauge (HP) -->
             <div class="w-full flex items-center gap-2">
                 <span class="text-[10px] font-orbitron text-red-500 font-bold w-12"><i class="fa-solid fa-brain mr-1 animate-pulse"></i>SAN</span>
                 <div class="flex-1 h-2 bg-gray-900 rounded-full overflow-hidden border border-gray-800">
@@ -146,7 +133,6 @@
             </div>
         </div>
 
-        <!-- Tuning Panel with Oscilloscope Visualizer -->
         <div class="px-4 py-3 bg-gray-900/20 border-b border-gray-900/60 z-10 flex flex-col gap-2">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2">
@@ -158,11 +144,9 @@
                 </button>
             </div>
 
-            <!-- Dual-Wave Oscilloscope Canvas -->
             <div class="relative h-20 bg-gray-950/90 rounded-xl border border-gray-900 overflow-hidden">
                 <canvas id="osc-canvas" class="w-full h-full"></canvas>
                 
-                <!-- Tuner Gauge -->
                 <div id="tuner-assist" class="absolute inset-x-0 bottom-1 flex flex-col items-center justify-center transition-opacity duration-300 opacity-0 pointer-events-none">
                     <div class="flex items-center justify-between w-4/5 text-[9px] text-gray-500 font-orbitron">
                         <span>FLAT</span>
@@ -176,38 +160,30 @@
             </div>
         </div>
 
-        <!-- Visual Viewport (Dark Maze Environment) -->
         <div class="flex-1 relative bg-black overflow-hidden z-10 flex items-center justify-center">
             <canvas id="game-canvas" class="absolute inset-0 w-full h-full"></canvas>
 
-            <!-- Screen Message Overlay -->
             <div id="game-toast" class="absolute top-4 px-4 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-700 text-xs font-semibold text-emerald-300 pointer-events-none opacity-0 transition-opacity duration-300 shadow-md">
                 找到共鳴！保持前進...
             </div>
 
-            <!-- Danger Red Pulsing Alert -->
             <div id="danger-pulse" class="absolute inset-0 border-4 border-red-600/0 rounded-[36px] pointer-events-none transition-all duration-300"></div>
         </div>
 
-        <!-- Bottom Controller Area -->
         <div class="p-6 bg-gray-900/60 border-t border-gray-900/80 rounded-b-[36px] flex flex-col items-center justify-center z-10 relative">
             <div class="text-center mb-3">
                 <p class="text-[11px] font-orbitron text-gray-400 tracking-wider">拖曳搖桿調整音高並探路</p>
                 <p id="joystick-value" class="text-[10px] font-orbitron text-gray-600">ANGLE: 0° | SHIFT: 0%</p>
             </div>
 
-            <!-- 360-degree Virtual Joystick Container -->
             <div id="joystick-boundary" class="relative w-36 h-36 rounded-full bg-gray-950 border-4 border-gray-800 flex items-center justify-center shadow-inner cursor-pointer select-none">
-                <!-- Compass Tick Marks -->
                 <div class="absolute inset-2 rounded-full border border-dashed border-gray-900 flex items-center justify-center pointer-events-none">
                     <div class="absolute top-1 text-[8px] font-bold text-gray-700 font-orbitron">▲</div>
                     <div class="absolute bottom-1 text-[8px] font-bold text-gray-700 font-orbitron">▼</div>
                 </div>
 
-                <!-- Glow Aura for state -->
                 <div id="joystick-aura" class="absolute inset-0 rounded-full opacity-10 transition-colors duration-300 bg-gray-800"></div>
 
-                <!-- Draggable Knob -->
                 <div id="joystick-knob" class="absolute w-14 h-14 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 border-2 border-gray-600 shadow-lg flex items-center justify-center transition-all duration-75 active:scale-95 z-20">
                     <div class="w-4 h-4 rounded-full bg-gray-500 shadow-inner"></div>
                 </div>
@@ -466,7 +442,7 @@
                 const currentTheme = LEVELS[currentLevelIndex].type;
                 let p = {
                     x: Math.random() * gameWidth,
-                    y: currentTheme === 'forest' ? -10 : Math.random() * gameHeight, // 樹海從上方落下
+                    y: currentTheme === 'forest' ? -10 : Math.random() * gameHeight,
                     speedX: Math.random() * 0.6 - 0.3,
                     speedY: currentTheme === 'forest' ? Math.random() * 0.5 + 0.4 : Math.random() * 0.4 - 0.2,
                     alpha: Math.random() * 0.3 + 0.15,
@@ -478,10 +454,10 @@
                 if (currentTheme === 'forest') {
                     p.color = `rgba(${34 + Math.random()*40}, ${197 + Math.random()*30}, 94, `;
                 } else if (currentTheme === 'abyss') {
-                    p.color = `rgba(147, 197, 253, `; // 幽靈淡藍
+                    p.color = `rgba(147, 197, 253, `;
                     p.wiggleTimer = Math.random() * 100;
                 } else if (currentTheme === 'corridor') {
-                    p.color = Math.random() > 0.5 ? `rgba(236, 72, 153, ` : `rgba(168, 85, 247, `; // 音符桃紅/紫
+                    p.color = Math.random() > 0.5 ? `rgba(236, 72, 153, ` : `rgba(168, 85, 247, `;
                     const notes = ['♫', '♪', '♮', '♯', '♬'];
                     p.char = notes[Math.floor(Math.random() * notes.length)];
                 }
@@ -517,7 +493,7 @@
         }
 
         /**
-         * Redraw the Dark Maze viewport (包含主題背景與走路晃動)
+         * Redraw the Dark Maze viewport
          */
         function drawViewport() {
             if (gameCanvas.width !== gameCanvas.clientWidth || gameCanvas.height !== gameCanvas.clientHeight) {
@@ -543,7 +519,6 @@
                 p.y += p.speedY;
                 p.rot += p.rotSpeed;
 
-                // 邊界回繞處理
                 if (p.x < -20) p.x = gameWidth + 20;
                 if (p.x > gameWidth + 20) p.x = -20;
                 if (p.y < -20) p.y = gameHeight + 20;
@@ -558,13 +533,11 @@
                 gctx.rotate(p.rot);
 
                 if (currentTheme === 'forest') {
-                    // 繪製半透明小落葉
                     gctx.fillStyle = p.color + '1)';
                     gctx.beginPath();
                     gctx.ellipse(0, 0, 8 * p.scale, 4 * p.scale, Math.PI / 4, 0, Math.PI * 2);
                     gctx.fill();
                 } else if (currentTheme === 'abyss') {
-                    // 繪製微弱的小鬼魂形狀
                     p.wiggleTimer += 0.05;
                     const wiggleX = Math.sin(p.wiggleTimer) * 2;
                     gctx.translate(wiggleX, 0);
@@ -578,12 +551,10 @@
                     gctx.lineTo(-6 * p.scale, 8 * p.scale);
                     gctx.closePath();
                     gctx.fill();
-                    // 小眼睛
                     gctx.fillStyle = '#000';
                     gctx.fillRect(-2*p.scale, -4*p.scale, 1.5*p.scale, 1.5*p.scale);
                     gctx.fillRect(1*p.scale, -4*p.scale, 1.5*p.scale, 1.5*p.scale);
                 } else if (currentTheme === 'corridor') {
-                    // 繪製發光半透明飄動音符
                     gctx.fillStyle = p.color + '1)';
                     gctx.font = `${Math.floor(16 * p.scale)}px Orbitron`;
                     gctx.fillText(p.char, 0, 0);
@@ -709,12 +680,12 @@
                 gctx.restore();
             }
 
-            // 8. 如果是在大結局勝利畫面，繪製噴發的五彩斑斕小煙火
+            // 8. 結局噴發的五彩斑斕小煙火
             if (!gameActive && particles.length > 0) {
                 particles.forEach(p => {
                     p.x += p.vx;
                     p.y += p.vy;
-                    p.vy += 0.04; // 微弱重力下墜
+                    p.vy += 0.04;
                     p.alpha -= 0.006;
                     gctx.save();
                     gctx.globalAlpha = Math.max(0, p.alpha);
@@ -806,7 +777,7 @@
 
             const status = getTuningStatus();
 
-            // 判斷是否為最後一關的最後一題
+            // 判斷是否為最後一關的最後一題 (第 5 題)
             const isLastNode = (currentLevelIndex === LEVELS.length - 1) && (currentNodeIndex === LEVELS[currentLevelIndex].nodes.length - 1);
 
             if (joystickActive && !isEndingFlash) {
@@ -844,16 +815,28 @@
 
                 handleCreepyEyes(status.deltaRatio);
 
-                // 走路晃動效果
+                // ─── 走路 / 倒數狂奔晃動動效 ───
                 const dragStrength = Math.sqrt(joystickVector.x*joystickVector.x + joystickVector.y*joystickVector.y) / maxJoystickDrag;
+                
                 if (dragStrength > 0.1) {
-                    walkTimer += dragStrength * 0.15;
-                    currentBobY = Math.abs(Math.sin(walkTimer)) * -8 * dragStrength; 
+                    let speedMultiplier = 1.0;
+                    let amplitudeMultiplier = 1.0;
+
+                    // 如果是最後一題且方向對準，隨著時間逼近 0 秒，晃動成倍數增長（模擬跑起來）
+                    if (isLastNode && status.isAligned) {
+                        // stepProgress 從 0 到 100，隨之增加速度與幅度
+                        speedMultiplier = 1.0 + (stepProgress * 0.03);      // 速度最高增強至 4 倍
+                        amplitudeMultiplier = 1.0 + (stepProgress * 0.025);  // 幅度最高增強至 3.5 倍
+                    }
+
+                    walkTimer += dragStrength * 0.15 * speedMultiplier;
+                    // 計算上下晃動位移 Y
+                    currentBobY = Math.abs(Math.sin(walkTimer)) * -8 * dragStrength * amplitudeMultiplier; 
                 } else {
                     currentBobY += (0 - currentBobY) * 0.1;
                 }
 
-                // 正確對準方向累積時間
+                // ─── 正確對準方向累積時間 (5秒) ───
                 if (status.isAligned) {
                     stepProgress += (100 / (60 * 5)); 
 
@@ -861,8 +844,7 @@
                     
                     if (isLastNode) {
                         gameToast.innerText = `出口就在正前方！全速衝刺 ${remainingSeconds} 秒...`;
-                        // 【修改重點】最後一題答對時，中間原點光圈會隨著時間越來越大，模仿走出迷宮感
-                        targetPlayerRadius = 20 + (stepProgress * 1.5); 
+                        targetPlayerRadius = 20 + (stepProgress * 1.5); // 原點逐漸擴大
                     } else {
                         gameToast.innerText = `共鳴鎖定！維持前方 ${remainingSeconds} 秒...`;
                         targetPlayerRadius = 20;
@@ -886,6 +868,7 @@
                 dangerPulse.style.borderColor = 'rgba(220, 38, 38, 0)';
                 gameToast.style.opacity = "0";
                 
+                // 釋放搖桿時，晃動、進度與大小平滑歸零
                 currentBobY += (0 - currentBobY) * 0.1;
                 stepProgress = Math.max(0, stepProgress - 0.5);
                 if (isLastNode && !isEndingFlash) targetPlayerRadius = Math.max(20, 20 + (stepProgress * 1.5));
@@ -911,13 +894,11 @@
             const currentLvl = LEVELS[currentLevelIndex];
             const isLastNode = (currentLevelIndex === LEVELS.length - 1) && (currentNodeIndex === LEVELS[currentLevelIndex].nodes.length - 1);
 
-            // 如果是最後一題，啟動震撼的白光強烈震撼結局
             if (isLastNode) {
                 triggerEndingSequence();
                 return;
             }
 
-            // 一般過關，清除舊主題粒子並噴發慶祝火花
             stepProgress = 0;
             themeParticles.length = 0; 
             playSuccessChime();
@@ -946,36 +927,34 @@
         }
 
         /**
-         * 走出出口的白光擴散強烈特效
+         * 走出出口的白光擴散大結局特效
          */
         function triggerEndingSequence() {
             gameActive = false;
             joystickActive = false;
             isEndingFlash = true;
 
-            // 讓原點瞬间膨脹填滿螢幕
-            targetPlayerRadius = gameWidth * 1.2;
+            // 核心白點瞬間擴散吞噬整個畫面
+            targetPlayerRadius = gameWidth * 1.5;
 
-            // 同步啟動全螢幕白光閃爍疊加層
+            // 啟動全螢幕純白淡入
             whiteoutOverlay.style.opacity = "1";
 
-            // 稍微延遲後觸發華麗結局畫面
             setTimeout(() => {
                 playSuccessChime();
-                // 生成大量五彩繽紛噴發粒子在大地圖畫布上
+                // 往上爆發大量炫彩慶祝煙火
                 for (let i = 0; i < 150; i++) {
                     particles.push({
                         x: gameWidth / 2 + (Math.random() - 0.5) * 60,
                         y: gameHeight / 2 + (Math.random() - 0.5) * 60,
                         size: Math.random() * 5 + 2,
                         vx: (Math.random() - 0.5) * 12,
-                        vy: (Math.random() - 0.5) * 12 - 3, // 往上噴發
+                        vy: (Math.random() - 0.5) * 12 - 3, 
                         alpha: 1.5,
                         color: `hsl(${Math.random() * 360}, 100%, 65%)`
                     });
                 }
                 
-                // 漸隱白光
                 whiteoutOverlay.style.opacity = "0";
                 triggerWinGame();
             }, 900);
@@ -1012,7 +991,6 @@
             joystickKnob.style.transform = 'translate(0px, 0px)';
             joystickVector = { x: 0, y: 0 };
 
-            // 還原原本的預設選單樣式
             startOverlay.className = "absolute inset-0 z-40 bg-gray-950/95 flex flex-col items-center justify-between p-8 text-center rounded-[36px] transition-all duration-500";
             gameTitle.innerText = "SOUND MAZE";
             gameTitle.className = "text-4xl font-orbitron font-black text-gray-100 tracking-wider mb-2 glow-text-green";
@@ -1051,7 +1029,7 @@
         }
 
         /**
-         * 顯示蛻變後的「極光风景五彩繽紛」華麗終極勝利結算畫面
+         * 終極絢麗勝利結算畫面
          */
         function triggerWinGame() {
             if (playerGain) playerGain.gain.setValueAtTime(0, audioCtx.currentTime);
@@ -1060,8 +1038,6 @@
 
             startOverlay.classList.remove('pointer-events-none');
             startOverlay.style.opacity = "0.98";
-            
-            // 【修改重點】套用華麗極光风景漸層與流動動效樣式
             startOverlay.classList.add('victory-bg');
             
             gameSubtitle.innerText = "✨ FREEDOM! 你成功走出了無盡深淵 ✨";
