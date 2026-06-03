@@ -188,7 +188,7 @@
 
 </div>
 
-<audio id="custom-bgm" src="audio/song1.mp3" loop></audio>
+<audio id="custom-bgm" src="./audio/song1.mp3" loop></audio>
 
 <script>
 // ═══════════════════════════════
@@ -248,7 +248,7 @@ const headerBar=G('header-bar'), oscBar=G('osc-bar'), sliderBar=G('slider-bar');
 
 // 修正 2：在 DOM 抓取完畢後再獲取 customBgm 元素並設定音量
 const customBgm = document.getElementById('custom-bgm');
-if (customBgm) customBgm.volume = 0.3; 
+if (customBgm) customBgm.volume = 0.8; 
 
 let GW=gameCanvas.clientWidth, GH=gameCanvas.clientHeight;
 const gctx=gameCanvas.getContext('2d'), octx=oscCanvas.getContext('2d');
