@@ -30,13 +30,29 @@
         #canvas-container {
             transition: none;
         }
+        /* ── 舊的 ending-expand 保留相容性，但新動畫不再用它 ── */
         #canvas-container.ending-expand {
             position: absolute !important;
             inset: 0 !important;
             z-index: 45 !important;
-            border-radius: 36px;
-            transition: border-radius 0.6s ease;
         }
+
+        /* ── 新結束動畫：白色覆蓋層從中心爆開 ── */
+        #ending-flash {
+            position: absolute;
+            inset: 0;
+            z-index: 46;
+            border-radius: 36px;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0s;
+        }
+        #ending-flash.flash-in {
+            opacity: 1;
+            transition: opacity 0.45s ease-out;
+        }
+
         #victory-layer {
             position: absolute;
             inset: 0;
@@ -44,7 +60,7 @@
             border-radius: 36px;
             display: none;
             opacity: 0;
-            transition: opacity 0.8s ease;
+            transition: opacity 0.6s ease;
         }
     </style>
 </head>
@@ -61,6 +77,7 @@
     </div>
 
     <div id="victory-layer"></div>
+    <div id="ending-flash"></div>
 
     <div id="jumpscare-screen" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center hidden">
         <div id="ghost-layer" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -256,16 +273,46 @@ const gctx=gameCanvas.getContext('2d'), octx=oscCanvas.getContext('2d');
 // HELPERS
 // ═══════════════════════════════
 function genPool(){
-    LEVELS.forEach(l=>{l.nodes=[];for(let i=0;i<l.nodeCount;i++){const n=NOTE_POOL[Math.floor(Math.random()*NOTE_POOL.length)];l.nodes.push({frequency:n.freq,note:n.note,targetPercent:0.15+Math.random()*0.7});}});
+    // 從 C4(48) 到 B5(71) 的 24 個半音裡隨機取目標音
+    const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    LEVELS.forEach(l=>{
+        l.nodes=[];
+        for(let i=0;i<l.nodeCount;i++){
+            const semi = Math.floor(Math.random() * SEMITONE_RANGE); // 0~23
+            const midi = SEMITONE_MIN + semi;
+            const octave = Math.floor(midi / 12) - 1;
+            const noteName = NOTE_NAMES[midi % 12] + octave;
+            const freq = midiToFreq(midi);
+            // targetPercent = 對應滑桿位置 (0~1)
+            const targetPercent = semi / (SEMITONE_RANGE - 1);
+            l.nodes.push({frequency: freq, note: noteName, targetPercent});
+        }
+    });
 }
 
+// 滑桿 0~1 對應 C4(261.63Hz) 到 B5(987.77Hz)，共 24 個半音
+// 目標音固定在某個半音位置，玩家要把滑桿移到對應位置
+const SEMITONE_MIN = 48; // C4 = MIDI 48
+const SEMITONE_RANGE = 24; // 兩個八度
+
+function midiToFreq(midi){ return 440 * Math.pow(2, (midi-69)/12); }
+
 function getTuning(){
-    const nd=LEVELS[lvlIdx].nodes[nodeIdx], d=sliderPct-nd.targetPercent, o=d*2;
-    const actualFreq=nd.frequency*Math.pow(2,o);
-    const hzDiff=Math.abs(actualFreq-nd.frequency);
-    const isAligned=hzDiff<15;
-    const deltaRatio=Math.min(1,hzDiff/200);
-    return {isAligned, deltaRatio, actualFreq, octOff:o, hzDiff};
+    const nd = LEVELS[lvlIdx].nodes[nodeIdx];
+    // 目標音的 MIDI 半音位置（0~1 內）
+    const targetSemi = nd.targetPercent * (SEMITONE_RANGE - 1); // 0~23 連續值
+    // 滑桿對應的 MIDI 半音位置（連續，非整數）
+    const sliderSemi = sliderPct * (SEMITONE_RANGE - 1);
+    // 滑桿對應的實際頻率（連續滑動）
+    const actualFreq = midiToFreq(SEMITONE_MIN + sliderSemi);
+    // 目標頻率（就是 nd.frequency，與 targetSemi 一致）
+    const targetFreq = nd.frequency;
+    // 半音距離
+    const semiDiff = Math.abs(sliderSemi - targetSemi);
+    const isAligned = semiDiff < 0.35; // 距離目標半音 0.35 音分以內即鎖定
+    const deltaRatio = Math.min(1, semiDiff / 6); // 6 個半音外為最暗
+    const octOff = (sliderSemi - targetSemi) / 12; // 給 tuner 顯示用
+    return {isAligned, deltaRatio, actualFreq, targetFreq, octOff, semiDiff};
 }
 
 function updateUI(){
@@ -293,12 +340,14 @@ function cleanupAudio(){
 function initAudio(){
     cleanupAudio();
     audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    masterGain=audioCtx.createGain(); masterGain.gain.value=0.22; masterGain.connect(audioCtx.destination);
+    masterGain=audioCtx.createGain(); masterGain.gain.value=0.18; masterGain.connect(audioCtx.destination);
 
-    playerOsc=audioCtx.createOscillator(); playerOsc.type='triangle';
+    // 主音：sawtooth（亮、有泛音，像弦樂合成）
+    playerOsc=audioCtx.createOscillator(); playerOsc.type='sawtooth';
     playerGain=audioCtx.createGain(); playerGain.gain.value=0;
     playerOsc.connect(playerGain); playerGain.connect(masterGain); playerOsc.start();
 
+    // 八度上方疊加：sine（讓音色更飽滿像鋼琴）
     harmonyOsc=audioCtx.createOscillator(); harmonyOsc.type='sine';
     harmonyGain=audioCtx.createGain(); harmonyGain.gain.value=0;
     harmonyOsc.connect(harmonyGain); harmonyGain.connect(masterGain); harmonyOsc.start();
@@ -314,7 +363,7 @@ function resumeAudio(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume
 // BGM：直接操作 <audio> 元素，與 Web Audio API 完全獨立
 function startTitleDrone(){
     if(!customBgm)return;
-    customBgm.volume=0.5;
+    customBgm.volume=0.25;
     customBgm.currentTime=0;
     customBgm.play().catch(()=>{}); // 瀏覽器攔截時靜默失敗，等 ensureAudio 補播
 }
@@ -331,6 +380,28 @@ function silenceAll(){
         try{harmonyGain.gain.setTargetAtTime(0,now,0.1);}catch(e){}
     }
     stopTitleDrone();
+}
+
+function playPreviewNote(){
+    if(!audioCtx)return;
+    resumeAudio();
+    const f=LEVELS[lvlIdx].nodes[nodeIdx].frequency;
+    const now=audioCtx.currentTime;
+    // 主音
+    const o1=audioCtx.createOscillator(), g1=audioCtx.createGain();
+    o1.type='sine'; o1.frequency.value=f;
+    g1.gain.setValueAtTime(0,now);
+    g1.gain.linearRampToValueAtTime(0.28,now+0.04);
+    g1.gain.setValueAtTime(0.28,now+0.38);
+    g1.gain.exponentialRampToValueAtTime(0.001,now+0.55);
+    o1.connect(g1); g1.connect(masterGain); o1.start(now); o1.stop(now+0.6);
+    // 八度疊加讓音色飽滿
+    const o2=audioCtx.createOscillator(), g2=audioCtx.createGain();
+    o2.type='sine'; o2.frequency.value=f*2;
+    g2.gain.setValueAtTime(0,now);
+    g2.gain.linearRampToValueAtTime(0.1,now+0.04);
+    g2.gain.exponentialRampToValueAtTime(0.001,now+0.55);
+    o2.connect(g2); g2.connect(masterGain); o2.start(now); o2.stop(now+0.6);
 }
 
 function playCue(){
@@ -371,7 +442,7 @@ function playChime(){
 function playJumpscare(){
     if(!audioCtx)return;
     const now=audioCtx.currentTime,g=audioCtx.createGain();
-    g.gain.setValueAtTime(0.6,now); g.gain.exponentialRampToValueAtTime(0.001,now+1.8); g.connect(masterGain);
+    g.gain.setValueAtTime(0.25,now); g.gain.exponentialRampToValueAtTime(0.001,now+1.8); g.connect(masterGain);
     const r=audioCtx.createOscillator(); r.type='sawtooth'; r.frequency.setValueAtTime(60,now); r.frequency.exponentialRampToValueAtTime(20,now+1.5);
     const s=audioCtx.createOscillator(); s.type='sawtooth'; s.frequency.setValueAtTime(1000,now); s.frequency.exponentialRampToValueAtTime(3000,now+1);
     r.connect(g); s.connect(g); r.start(now); s.start(now); r.stop(now+1.8); s.stop(now+1.8);
@@ -481,14 +552,18 @@ function drawOsc(){
         oscCanvas.width=oscCanvas.clientWidth; oscCanvas.height=oscCanvas.clientHeight;
     }
     const W=oscCanvas.width,H=oscCanvas.height; octx.clearRect(0,0,W,H);
-    const s=getTuning(), t=Date.now()*0.005, nd=LEVELS[lvlIdx].nodes[nodeIdx];
+    const s=getTuning(), t=Date.now()*0.005;
     if(sliderActive){
+        // 目標波（固定頻率，綠色背景參考波）
         octx.strokeStyle='rgba(16,185,129,0.35)'; octx.lineWidth=2; octx.beginPath();
         for(let x=0;x<W;x++){const y=H/2+Math.sin(x*0.05+t)*15;x===0?octx.moveTo(x,y):octx.lineTo(x,y);}octx.stroke();
+        // 玩家波（頻率隨滑桿變化，半音差越大波形越密/疏）
         const waveDanger=sanity<=5 && alignState!=='green';
         octx.strokeStyle=alignState==='green'?'rgba(34,197,94,0.85)':waveDanger?'rgba(239,68,68,0.75)':'rgba(59,130,246,0.75)';
-        const fsc=0.05*Math.pow(2,s.octOff); octx.beginPath();
-        for(let x=0;x<W;x++){const y=H/2+Math.sin(x*fsc+t*(s.actualFreq/nd.frequency))*15;x===0?octx.moveTo(x,y):octx.lineTo(x,y);}octx.stroke();
+        const freqRatio = s.actualFreq / s.targetFreq;
+        const fsc = 0.05 * freqRatio;
+        octx.beginPath();
+        for(let x=0;x<W;x++){const y=H/2+Math.sin(x*fsc+t*freqRatio)*15;x===0?octx.moveTo(x,y):octx.lineTo(x,y);}octx.stroke();
         if(alignState==='green'){octx.strokeStyle='#22c55e';octx.lineWidth=3;octx.beginPath();for(let x=0;x<W;x++){const y=H/2+Math.sin(x*0.05+t)*(15+Math.sin(t*3)*2);x===0?octx.moveTo(x,y):octx.lineTo(x,y);}octx.stroke();}
     } else {
         octx.strokeStyle='rgba(75,85,99,0.4)'; octx.lineWidth=2; octx.beginPath(); octx.moveTo(0,H/2); octx.lineTo(W,H/2); octx.stroke();
@@ -513,13 +588,20 @@ function updateLogic(){
 
     if(audioCtx){
         if(sliderActive){
-            playerOsc.frequency.setTargetAtTime(s.actualFreq,audioCtx.currentTime,0.05);
-            playerGain.gain.setTargetAtTime(0.25,audioCtx.currentTime,0.1);
-            if(green){harmonyOsc.frequency.setTargetAtTime(LEVELS[lvlIdx].nodes[nodeIdx].frequency*1.5,audioCtx.currentTime,0.05);harmonyGain.gain.setTargetAtTime(0.18,audioCtx.currentTime,0.15);}
-            else{harmonyGain.gain.setTargetAtTime(0,audioCtx.currentTime,0.1);}
+            // 主音跟著滑桿走（連續半音頻率）
+            playerOsc.frequency.setTargetAtTime(s.actualFreq, audioCtx.currentTime, 0.03);
+            playerGain.gain.setTargetAtTime(0.22, audioCtx.currentTime, 0.08);
+            // 八度疊加：平時跟主音高一個八度，共鳴時切換為目標音的五度
+            if(green){
+                harmonyOsc.frequency.setTargetAtTime(s.targetFreq * 1.5, audioCtx.currentTime, 0.05);
+                harmonyGain.gain.setTargetAtTime(0.15, audioCtx.currentTime, 0.1);
+            } else {
+                harmonyOsc.frequency.setTargetAtTime(s.actualFreq * 2, audioCtx.currentTime, 0.03);
+                harmonyGain.gain.setTargetAtTime(0.08, audioCtx.currentTime, 0.08);
+            }
         } else {
-            playerGain.gain.setTargetAtTime(0,audioCtx.currentTime,0.2);
-            harmonyGain.gain.setTargetAtTime(0,audioCtx.currentTime,0.1);
+            playerGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.15);
+            harmonyGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
         }
     }
 
@@ -591,38 +673,45 @@ function advanceNode(){
     else if(lvlIdx<LEVELS.length-1){lvlIdx++;nodeIdx=0;}
     updateUI();
     toast(nodeIdx===0?`【通關】進入下一關：${LEVELS[lvlIdx].name}`:'突破障礙！尋下個隨機共鳴點',3000);
+    // ★ 換題後播預覽音，短暫凍結倒計時
+    gameActive=false;
+    setTimeout(()=>{
+        playPreviewNote();
+        setTimeout(()=>{ gameActive=true; sanity=MAX_SANITY; }, 200);
+    }, 300);
 }
 
 function triggerEnding(){
     gameActive=false; sliderActive=false;
     playVictoryFanfare();
-    for(let i=0;i<120;i++) fParticles.push({
-        x:GW/2+(Math.random()-0.5)*40, y:GH/2+(Math.random()-0.5)*40,
-        size:Math.random()*5+2.5, vx:(Math.random()-0.5)*14, vy:(Math.random()-0.5)*14-3,
-        alpha:1.5, color:`hsl(${Math.random()*360},100%,65%)`
+    endingPhase=1; // 停止遊戲邏輯
+
+    // 大量煙火爆發
+    for(let i=0;i<150;i++) fParticles.push({
+        x:GW/2+(Math.random()-0.5)*60, y:GH/2+(Math.random()-0.5)*60,
+        size:Math.random()*6+2, vx:(Math.random()-0.5)*16, vy:(Math.random()-0.5)*16-4,
+        alpha:1.8, color:`hsl(${Math.random()*360},100%,65%)`
     });
-    canvasContainer.classList.add('ending-expand');
-    requestAnimationFrame(()=>{
-        gameCanvas.width=canvasContainer.offsetWidth;
-        gameCanvas.height=canvasContainer.offsetHeight;
-        GW=gameCanvas.width; GH=gameCanvas.height;
-        endCircleR=baseR;
-        endingPhase=1;
-        const diag=Math.hypot(GW,GH);
-        const timeNeeded=Math.ceil(diag/22)*(1000/60)+400;
+
+    // 0.6s 後白光閃入
+    const flash = G('ending-flash');
+    setTimeout(()=>{
+        flash.classList.add('flash-in');
+        // 白光完全亮起後直接切勝利畫面
         setTimeout(()=>{
             endingPhase=2;
             showVictory();
-        }, Math.max(1400, timeNeeded));
-    });
+        }, 500);
+    }, 600);
 }
 
 function showVictory(){
     victoryLayer.style.display='block';
     victoryLayer.style.background='linear-gradient(135deg,#0f172a 0%,#1e1b4b 30%,#311042 70%,#022c22 100%)';
+    // 白光已覆蓋畫面，直接淡入勝利層（覆蓋白光）
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
         victoryLayer.style.opacity='1';
-        setTimeout(buildVictoryScreen, 700);
+        setTimeout(buildVictoryScreen, 500);
     }));
 }
 
@@ -725,10 +814,14 @@ function resetGame(full=false){
 
 function startGame(){
     resumeAudio();
-    stopTitleDrone();    // ★ 進遊戲立刻靜音
+    stopTitleDrone();
     startOverlay.style.opacity='0';
     startOverlay.style.pointerEvents='none';
-    genPool(); updateUI(); sanity=MAX_SANITY; gameActive=true;
+    genPool(); updateUI(); sanity=MAX_SANITY;
+    // ★ 先播預覽音，0.7s 後才開始倒計時
+    gameActive=false;
+    playPreviewNote();
+    setTimeout(()=>{ gameActive=true; }, 700);
 }
 
 function triggerJumpscare(){
