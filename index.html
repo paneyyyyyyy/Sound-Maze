@@ -326,20 +326,25 @@ function initAudio(){
 
 function resumeAudio(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();}
 
-// Fade drone in for title screen
+
+// 取得我們剛剛建立的 MP3 標籤
+const customBgm = document.getElementById('custom-bgm');
+// 你可以自由調整背景音樂的音量 (0.0 到 1.0)
+if (customBgm) customBgm.volume = 0.3; 
+
 function startTitleDrone(){
-    if(!audioCtx||!droneGain)return;
-    droneOsc.frequency.value=110;
-    droneGain.gain.cancelScheduledValues(audioCtx.currentTime);
-    droneGain.gain.setValueAtTime(droneGain.gain.value, audioCtx.currentTime);
-    droneGain.gain.linearRampToValueAtTime(0.025, audioCtx.currentTime+2.0);
+    // 進入主畫面或重置時，播放 MP3
+    if(customBgm) {
+        customBgm.currentTime = 0; // 從頭播放
+        customBgm.play().catch(e => console.log("等待使用者點擊後播放"));
+    }
 }
 
-// Fade drone out immediately (game start)
 function stopTitleDrone(){
-    if(!audioCtx||!droneGain)return;
-    droneGain.gain.cancelScheduledValues(audioCtx.currentTime);
-    droneGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.2);
+    // 這邊原本是遊戲開始時關閉主畫面音樂
+    // 如果你希望「遊戲中繼續播放這首 MP3」，這裡就【什麼都不用寫】
+    // 如果你希望「進入遊戲就安靜」，請取消註釋下面這行：
+    if(customBgm) customBgm.pause();
 }
 
 function silenceAll(){
@@ -347,7 +352,9 @@ function silenceAll(){
     const now=audioCtx.currentTime;
     try{playerGain.gain.setTargetAtTime(0,now,0.1);}catch(e){}
     try{harmonyGain.gain.setTargetAtTime(0,now,0.1);}catch(e){}
-    try{droneGain.gain.setTargetAtTime(0,now,0.3);}catch(e){}
+    
+    // 【新增】當觸發暫停、失敗、或通關時，自動暫停自訂背景音樂
+    if(customBgm) customBgm.pause();
 }
 
 function playCue(){
@@ -638,6 +645,7 @@ function advanceNode(){
 // Phase 2: once circle fills, fade in victory text overlay.
 function triggerEnding(){
     gameActive=false; sliderActive=false;
+    if(customBgm) customBgm.pause(); // 【新增】通關時關閉自訂背景音
 
     // FIX 4: kill all game sounds, play fanfare
     playVictoryFanfare();
@@ -874,6 +882,9 @@ G('btn-resume').addEventListener('click',e=>{
     pauseOverlay.classList.add('hidden');
     btnPause.innerHTML='<i class="fa-solid fa-pause text-xs"></i>';
     resumeAudio();
+
+    // 【新增】取消暫停時恢復音樂
+    if(customBgm) customBgm.play();
 });
 btnVA.addEventListener('click',e=>{
     e.stopPropagation(); visualAssist=!visualAssist;
@@ -892,5 +903,6 @@ function loop(){
 }
 window.onload=()=>{genPool();updateUI();loop();};
 </script>
+<audio id="custom-bgm" src="/audio/song1.mp3" loop></audio>
 </body>
 </html>
