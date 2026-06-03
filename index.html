@@ -308,7 +308,7 @@ function cleanupAudio(){
 function initAudio(){
     cleanupAudio();
     audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    masterGain=audioCtx.createGain(); masterGain.gain.value=0.4; masterGain.connect(audioCtx.destination);
+    masterGain=audioCtx.createGain(); masterGain.gain.value=0.22; masterGain.connect(audioCtx.destination);
     playerOsc=audioCtx.createOscillator(); playerOsc.type='triangle';
     playerGain=audioCtx.createGain(); playerGain.gain.value=0;
     playerOsc.connect(playerGain); playerGain.connect(masterGain); playerOsc.start();
@@ -317,9 +317,26 @@ function initAudio(){
     harmonyOsc.connect(harmonyGain); harmonyGain.connect(masterGain); harmonyOsc.start();
     const df=audioCtx.createBiquadFilter(); df.type='lowpass'; df.frequency.value=220;
     droneOsc=audioCtx.createOscillator(); droneOsc.type='sawtooth';
-    droneGain=audioCtx.createGain(); droneGain.gain.value=0.01;
+    droneGain=audioCtx.createGain(); droneGain.gain.value=0; // silent by default in game
     droneOsc.connect(df); df.connect(droneGain); droneGain.connect(masterGain); droneOsc.start();
     droneOsc.frequency.value=LEVELS[lvlIdx].bgmTone;
+}
+
+// Title screen ambient drone — called once on page load
+function initTitleDrone(){
+    cleanupAudio();
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    masterGain=audioCtx.createGain(); masterGain.gain.value=0.22; masterGain.connect(audioCtx.destination);
+    // Drone only — no player/harmony oscillators yet
+    playerOsc=null; playerGain=null; harmonyOsc=null; harmonyGain=null;
+    const df=audioCtx.createBiquadFilter(); df.type='lowpass'; df.frequency.value=200;
+    droneOsc=audioCtx.createOscillator(); droneOsc.type='sawtooth';
+    droneGain=audioCtx.createGain(); droneGain.gain.value=0;
+    droneOsc.connect(df); df.connect(droneGain); droneGain.connect(masterGain); droneOsc.start();
+    droneOsc.frequency.value=110; // title screen tone
+    // Fade drone in gently
+    droneGain.gain.setValueAtTime(0, audioCtx.currentTime);
+    droneGain.gain.linearRampToValueAtTime(0.025, audioCtx.currentTime+2.0);
 }
 function resumeAudio(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();}
 
@@ -395,8 +412,9 @@ function spawnTheme(){
     tParticles.push(p);
 }
 
-function tickEyes(dr){
-    if(sanity<=5&&Math.random()<0.03&&eyes.length<10){
+function tickEyes(){
+    // Spawn only when danger zone (<=5s) AND not in green resonance — matches red pulse condition
+    if(sanity<=5 && alignState!=='green' && Math.random()<0.03 && eyes.length<10){
         const x=Math.random()*GW,y=Math.random()*GH;
         if(Math.hypot(x-GW/2,y-GH/2)>80) eyes.push({x,y,scale:Math.random()*0.5+0.5,bt:Math.random()*100+50,life:300});
     }
@@ -436,7 +454,7 @@ function drawGame(){
     gctx.fillStyle=sg; gctx.fillRect(0,0,GW,GH);
 
     // Eyes
-    tickEyes(s.deltaRatio);
+    tickEyes();
     eyes.forEach(e=>{
         if(Math.hypot(e.x-cx,e.y-cy)<lightR)return;
         if(e.bt>=15){
@@ -760,12 +778,23 @@ function resetGame(full=false){
     nb.addEventListener('click', startGame);
     ob.parentNode.replaceChild(nb, ob);
 
-    genPool(); initAudio(); updateUI();
+    genPool();
+    // Restart title drone for start screen
+    titleDroneStarted=false;
+    initTitleDrone();
+    resumeAudio();
+    updateUI();
 }
 
 function startGame(){
-    if(!audioCtx)initAudio();
-    resumeAudio();
+    // Fade out title drone, then swap to full game audio (drone silent)
+    if(audioCtx && droneGain){
+        droneGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.3);
+    }
+    setTimeout(()=>{
+        initAudio(); // full engine, drone starts silent
+        resumeAudio();
+    }, 400);
     startOverlay.style.opacity='0';
     startOverlay.style.pointerEvents='none';
     genPool(); updateUI(); sanity=MAX_SANITY; gameActive=true;
@@ -809,7 +838,21 @@ window.addEventListener('touchend',sliderEnd);
 // ═══════════════════════════════
 // BUTTON BINDINGS
 // ═══════════════════════════════
+// Start button on title screen — init title drone first, then startGame on click
 G('btn-start').addEventListener('click', startGame);
+
+// Title drone: start on first any-click/touch on the page (browser autoplay policy)
+let titleDroneStarted=false;
+function tryStartTitleDrone(){
+    if(titleDroneStarted||gameActive)return;
+    titleDroneStarted=true;
+    initTitleDrone();
+    resumeAudio();
+    document.removeEventListener('click', tryStartTitleDrone);
+    document.removeEventListener('touchstart', tryStartTitleDrone);
+}
+document.addEventListener('click', tryStartTitleDrone);
+document.addEventListener('touchstart', tryStartTitleDrone);
 
 // FIX 1: btn-failed-retry is bound ONCE and always calls resetGame(true).
 // It never gets cloned so its listener persists across resets.
