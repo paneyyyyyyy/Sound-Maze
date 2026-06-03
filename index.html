@@ -214,8 +214,8 @@ let gameActive=false, visualAssist=false, gamePaused=false;
 // Audio
 let audioCtx=null,playerOsc=null,playerGain=null,harmonyOsc=null,harmonyGain=null,droneOsc=null,droneGain=null,masterGain=null;
 
-// ★ 修正核心：bgmSourceNode 只建立一次，永遠不清掉
-let bgmSourceNode=null, bgmGainNode=null;
+// BGM 直接走 <audio> 系統輸出，不經過 Web Audio API
+// 這樣最可靠，不會有 AudioContext 接管衝突問題
 
 // Slider
 let sliderActive=false, sliderPct=0.5;
@@ -285,31 +285,9 @@ function hideToast(){gameToast.style.opacity='0';}
 function cleanupAudio(){
     if(!audioCtx)return;
     try{masterGain&&masterGain.gain.setValueAtTime(0,audioCtx.currentTime);}catch(e){}
-    // ★ 只斷開 bgmGainNode（不清 bgmSourceNode！）
-    try{bgmGainNode&&bgmGainNode.disconnect();}catch(e){}
-    bgmGainNode=null;
     try{audioCtx.close();}catch(e){}
     audioCtx=null; playerOsc=null; playerGain=null;
     harmonyOsc=null; harmonyGain=null; droneOsc=null; droneGain=null; masterGain=null;
-}
-
-// ★ 只建立一次 MediaElementSource，之後每次重新 connect 到新的 destination
-function initBgmNode(){
-    if(!audioCtx||!customBgm)return;
-    if(!bgmSourceNode){
-        // 第一次：真正建立 MediaElementSource
-        try{
-            bgmSourceNode=audioCtx.createMediaElementSource(customBgm);
-        }catch(e){
-            console.warn('MediaElementSource 建立失敗',e);
-            return;
-        }
-    }
-    // 每次 audioCtx 重建後，重建 GainNode 並重新 connect
-    bgmGainNode=audioCtx.createGain();
-    bgmGainNode.gain.value=0.4;
-    bgmSourceNode.connect(bgmGainNode);
-    bgmGainNode.connect(audioCtx.destination);
 }
 
 function initAudio(){
@@ -328,34 +306,31 @@ function initAudio(){
     droneOsc=audioCtx.createOscillator();
     droneGain=audioCtx.createGain();
     droneGain.gain.value=0;
-
-    // ★ 接上 BGM 節點（只建立一次 source，每次重建 gain+connect）
-    initBgmNode();
+    // BGM 走 <audio> 系統輸出，不接 Web Audio，所以這裡不需要任何 BGM 節點
 }
 
 function resumeAudio(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();}
 
-// ★ 首頁播放 MP3
+// BGM：直接操作 <audio> 元素，與 Web Audio API 完全獨立
 function startTitleDrone(){
-    if(customBgm){
-        customBgm.currentTime=0;
-        customBgm.play().catch(e=>console.log('等待玩家點擊解鎖音訊',e));
-    }
+    if(!customBgm)return;
+    customBgm.volume=0.5;
+    customBgm.currentTime=0;
+    customBgm.play().catch(()=>{}); // 瀏覽器攔截時靜默失敗，等 ensureAudio 補播
 }
-
-// ★ 進遊戲時關掉 MP3
 function stopTitleDrone(){
-    if(customBgm){
-        customBgm.pause();
-    }
+    if(!customBgm)return;
+    customBgm.pause();
+    customBgm.currentTime=0;
 }
 
 function silenceAll(){
-    if(!audioCtx)return;
-    const now=audioCtx.currentTime;
-    try{playerGain.gain.setTargetAtTime(0,now,0.1);}catch(e){}
-    try{harmonyGain.gain.setTargetAtTime(0,now,0.1);}catch(e){}
-    if(customBgm) customBgm.pause();
+    if(audioCtx){
+        const now=audioCtx.currentTime;
+        try{playerGain.gain.setTargetAtTime(0,now,0.1);}catch(e){}
+        try{harmonyGain.gain.setTargetAtTime(0,now,0.1);}catch(e){}
+    }
+    stopTitleDrone();
 }
 
 function playCue(){
@@ -794,26 +769,33 @@ window.addEventListener('touchend',sliderEnd);
 // ═══════════════════════════════
 G('btn-start').addEventListener('click', startGame);
 
-// ★ 自動播放：onload 直接嘗試，瀏覽器若攔截則等第一次點擊補播
+// 首次用戶互動時解鎖 Web Audio + 補播 BGM
 let audioReady=false;
 function ensureAudio(){
     if(audioReady)return;
     audioReady=true;
-    initAudio();
-    resumeAudio();
-    startTitleDrone();
     document.removeEventListener('pointerdown', ensureAudio);
+    // 若 AudioContext 尚未建立（被 load 事件跳過）則補建
+    if(!audioCtx) initAudio();
+    resumeAudio();
+    // 補播 BGM（首次點擊解鎖）
+    if(customBgm && customBgm.paused){
+        customBgm.volume=0.5;
+        customBgm.currentTime=0;
+        customBgm.play().catch(()=>{});
+    }
 }
 window.addEventListener('load', ()=>{
+    // 先建立 Web Audio（不播 BGM，等用戶互動）
     initAudio();
-    resumeAudio();
+    // 嘗試自動播放 BGM
     if(customBgm){
+        customBgm.volume=0.5;
         customBgm.currentTime=0;
         customBgm.play().then(()=>{
-            audioReady=true;
-            document.removeEventListener('pointerdown', ensureAudio);
+            audioReady=true; // 自動播放成功
         }).catch(()=>{
-            // 瀏覽器阻擋自動播放，等用戶第一次觸碰才播
+            // 被攔截 → 等用戶第一次觸碰
             document.addEventListener('pointerdown', ensureAudio);
         });
     }
