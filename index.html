@@ -309,17 +309,19 @@ function initAudio(){
 
 function resumeAudio(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();}
 
-// 修正 4：首頁播放自訂 MP3 檔案
+// 修正 1：點擊螢幕任何地方時，首頁開始播 MP3 背景音
 function startTitleDrone(){
     if(customBgm) {
-        customBgm.currentTime = 0;
-        customBgm.play().catch(e => console.log("等待玩家點擊頁面後播放音樂"));
+        customBgm.currentTime = 0; // 從頭播放
+        customBgm.play().catch(e => console.log("等待玩家點擊頁面後解鎖播放"));
     }
 }
 
-// 修正 5：進入遊戲時不關閉音樂，讓它在背景繼續播（如果希望進入遊戲就安靜，可以在這行取消註釋 customBgm.pause()）
+// 修正 2：當點擊「進入黑暗迷宮」按宮時，立刻把 MP3 停掉，讓遊戲內保持安靜！
 function stopTitleDrone(){
-    // if(customBgm) customBgm.pause(); 
+    if(customBgm) {
+        customBgm.pause(); // 👈 關鍵就在這一行，進入遊戲直接切斷音樂！
+    }
 }
 
 function silenceAll(){
@@ -806,7 +808,7 @@ G('btn-resume').addEventListener('click',e=>{
     btnPause.innerHTML='<i class="fa-solid fa-pause text-xs"></i>';
     resumeAudio();
 
-    if(customBgm) customBgm.play();
+    
 });
 btnVA.addEventListener('click',e=>{
     e.stopPropagation(); visualAssist=!visualAssist;
