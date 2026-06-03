@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sound Maze - 聲音迷宮</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2=family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family:'Inter',sans-serif; background:#030712; user-select:none; -webkit-user-select:none; touch-action:manipulation; }
@@ -28,10 +28,6 @@
             -webkit-text-fill-color:transparent;
         }
 
-        /* ── Ending animation ──────────────────────────────────────
-           The canvas-container expands to cover the full phone wrapper,
-           the white circle inside it fills the expanded area, then the
-           victory overlay fades in over everything.                   */
         #canvas-container {
             transition: none;
         }
@@ -43,7 +39,6 @@
             transition: border-radius 0.6s ease;
         }
 
-        /* Victory fade-in layer — sits above everything */
         #victory-layer {
             position: absolute;
             inset: 0;
@@ -59,7 +54,6 @@
 
 <div id="phone-wrapper" class="relative w-full max-w-md h-[92vh] max-h-[850px] bg-gray-950 rounded-[40px] border-4 border-gray-800 shadow-2xl flex flex-col overflow-hidden select-none">
 
-    <!-- Pause overlay — z-45 -->
     <div id="pause-overlay" class="absolute inset-0 z-45 hidden flex flex-col items-center justify-center rounded-[36px]" style="background:rgba(2,6,23,0.92);z-index:45">
         <div class="text-yellow-400 font-orbitron text-3xl font-black tracking-widest mb-3">⏸ PAUSED</div>
         <p class="text-gray-400 text-xs font-orbitron mb-8">遊戲已暫停，計時停止</p>
@@ -68,12 +62,9 @@
         </button>
     </div>
 
-    <!-- Victory fade-in layer (behind start-overlay but above game) -->
     <div id="victory-layer"></div>
 
-    <!-- Jumpscare — z-50, always on top -->
     <div id="jumpscare-screen" class="absolute inset-0 z-50 bg-black flex flex-col items-center justify-center hidden">
-        <!-- Ghost layer: can shake freely, pointer-events none so it never blocks button -->
         <div id="ghost-layer" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
             <div class="text-red-600 font-orbitron text-4xl font-extrabold tracking-widest animate-pulse mb-2 glow-text-red">LOST IN DARKNESS</div>
             <div id="ghost-face" class="w-40 h-40 opacity-90 mb-6" style="will-change:transform">
@@ -86,7 +77,6 @@
             </div>
             <p class="text-gray-400 text-xs font-semibold">倒計時歸零，已被迷宮深淵吞噬...</p>
         </div>
-        <!-- Button layer: fixed at bottom, completely independent from ghost shake -->
         <div class="absolute bottom-16 left-0 right-0 flex justify-center z-10">
             <button id="btn-failed-retry" class="px-8 py-3 bg-red-900 hover:bg-red-800 active:scale-95 text-white font-orbitron font-bold rounded-xl shadow-lg glow-red transition-all">
                 <i class="fa-solid fa-rotate-left mr-2"></i> 重新復活
@@ -94,7 +84,6 @@
         </div>
     </div>
 
-    <!-- Start / Victory overlay — z-40 -->
     <div id="start-overlay" class="absolute inset-0 z-40 bg-gray-950/95 flex flex-col items-center justify-between p-8 text-center rounded-[36px] transition-all duration-500">
         <div class="w-full mt-4">
             <div id="game-subtitle" class="text-xs font-orbitron text-emerald-500 tracking-widest mb-1">ATMOSPHERIC AUDIO ADVENTURE</div>
@@ -119,7 +108,6 @@
         </button>
     </div>
 
-    <!-- Header -->
     <div id="header-bar" class="p-4 bg-gray-900/40 border-b border-gray-900 flex flex-col gap-2 z-10 relative">
         <div class="flex justify-between items-center">
             <div>
@@ -130,7 +118,7 @@
                     <button id="btn-pause" class="w-8 h-8 rounded-lg bg-gray-800/80 text-gray-400 hover:text-yellow-400 flex items-center justify-center transition" title="暫停">
                         <i class="fa-solid fa-pause text-xs"></i>
                     </button>
-                    <button id="btn-visual-assist" class="w-8 h-8 rounded-lg bg-gray-800/80 text-gray-400 hover:text-emerald-400 flex items-center justify-center transition" title="輔助模式">
+                    <button id="btn-visual-assist" class="w-8 h-8 rounded-lg bg-gray-800/80 text-gray-400 hover:text-emerald-400 flex items-center justify-center transition" title="輔支模式">
                         <i class="fa-solid fa-eye-slash text-xs"></i>
                     </button>
                 </div>
@@ -144,7 +132,6 @@
         </div>
     </div>
 
-    <!-- Oscilloscope -->
     <div id="osc-bar" class="px-4 py-3 bg-gray-900/20 border-b border-gray-900/60 z-10 flex flex-col gap-2">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -161,32 +148,25 @@
                 <div class="flex items-center justify-between w-4/5 text-[9px] text-gray-500 font-orbitron mb-0.5">
                     <span>FLAT ◀</span><span class="text-emerald-400 font-bold tracking-widest">— TUNER —</span><span>▶ SHARP</span>
                 </div>
-                <!-- Bar with target marker -->
                 <div class="w-4/5 relative" style="height:18px">
-                    <!-- Track -->
                     <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 bg-gray-900 rounded-full border border-gray-700"></div>
-                    <!-- Target zone highlight (±15Hz green band) -->
                     <div id="tuner-target-zone" class="absolute top-1/2 -translate-y-1/2 h-1.5 bg-emerald-900/60 rounded-full border border-emerald-700/50" style="left:50%;width:6px;transform:translateX(-50%) translateY(-50%)"></div>
-                    <!-- Target pin — exact answer position -->
                     <div id="tuner-target-pin" class="absolute top-0 bottom-0 w-0.5 bg-emerald-400 rounded-full" style="left:50%;transform:translateX(-50%);box-shadow:0 0 6px rgba(52,211,153,0.9)">
                         <div class="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-emerald-400 rotate-45" style="box-shadow:0 0 4px rgba(52,211,153,0.9)"></div>
                         <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 text-[7px] text-emerald-400 font-orbitron font-black whitespace-nowrap" style="text-shadow:0 0 4px rgba(52,211,153,0.8)">TARGET</div>
                     </div>
-                    <!-- Player needle -->
                     <div id="tuner-needle" class="absolute top-1/2 -translate-y-1/2 w-2.5 h-4 rounded-full transition-all duration-75" style="left:50%;transform:translateX(-50%) translateY(-50%);background:#eab308;box-shadow:0 0 6px rgba(234,179,8,0.8)"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Game canvas (becomes the ending stage) -->
     <div id="canvas-container" class="flex-1 relative bg-black z-10">
         <canvas id="game-canvas" class="absolute inset-0 w-full h-full"></canvas>
         <div id="game-toast" class="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-700 text-xs font-semibold text-emerald-300 pointer-events-none opacity-0 transition-opacity duration-300 shadow-md z-20 whitespace-nowrap"></div>
         <div id="danger-pulse" class="absolute inset-0 border-4 border-red-600/0 pointer-events-none transition-all duration-300 z-20"></div>
     </div>
 
-    <!-- Slider -->
     <div id="slider-bar" class="p-6 bg-gray-900/60 border-t border-gray-900/80 rounded-b-[36px] flex flex-col items-center justify-center z-10 relative">
         <div class="text-center mb-3">
             <p class="text-[11px] font-orbitron text-gray-400 tracking-wider">左右拖曳滑鈕微調共鳴音調</p>
@@ -198,7 +178,6 @@
                 <span class="text-[9px] text-gray-700 font-bold font-orbitron">|</span>
                 <span class="text-[9px] text-gray-600 font-bold font-orbitron">SHARP</span>
             </div>
-            <!-- FIX 2: slider aura is always neutral grey — no color feedback -->
             <div id="slider-aura" class="absolute inset-0 rounded-2xl opacity-10 bg-gray-800 pointer-events-none"></div>
             <div id="slider-knob" class="absolute w-12 h-9 rounded-xl bg-gradient-to-b from-gray-700 to-gray-900 border-2 border-gray-500 shadow-xl flex items-center justify-center z-20" style="left:calc(50% - 24px)">
                 <div class="w-1.5 h-4 bg-gray-400 rounded-full mx-0.5 pointer-events-none"></div>
@@ -207,7 +186,9 @@
         </div>
     </div>
 
-</div><!-- /phone-wrapper -->
+</div>
+
+<audio id="custom-bgm" src="/audio/song1.mp3" loop></audio>
 
 <script>
 // ═══════════════════════════════
@@ -219,8 +200,8 @@ const NOTE_POOL = [
     {note:"F5",freq:698.46},{note:"G5",freq:783.99},{note:"A5",freq:880}
 ];
 const LEVELS = [
-    {name:"細語樹海",type:"forest",  bgmTone:110,nodeCount:1,nodes:[]},
-    {name:"幽魂深淵",type:"abyss",   bgmTone:98, nodeCount:2,nodes:[]},
+    {name:"細語樹海",type:"forest",   bgmTone:110,nodeCount:1,nodes:[]},
+    {name:"幽魂深淵",type:"abyss",    bgmTone:98, nodeCount:2,nodes:[]},
     {name:"幻音迷廊",type:"corridor",bgmTone:130,nodeCount:2,nodes:[]}
 ];
 
@@ -239,10 +220,10 @@ let sliderActive=false, sliderPct=0.5;
 
 // Visuals
 let baseR=20,targetR=20,lightR=60,stepProg=0,walkT=0,bobY=0;
-let alignTimer=0,alignState='none'; // none|locking|green
+let alignTimer=0,alignState='none';
 
 // Ending
-let endingPhase=0; // 0=off 1=expanding 2=done
+let endingPhase=0;
 let endCircleR=0;
 
 // Particles
@@ -265,6 +246,10 @@ const dangerPulse=G('danger-pulse'), gameToast=G('game-toast');
 const canvasContainer=G('canvas-container'), victoryLayer=G('victory-layer');
 const headerBar=G('header-bar'), oscBar=G('osc-bar'), sliderBar=G('slider-bar');
 
+// 修正 2：在 DOM 抓取完畢後再獲取 customBgm 元素並設定音量
+const customBgm = document.getElementById('custom-bgm');
+if (customBgm) customBgm.volume = 0.3; 
+
 let GW=gameCanvas.clientWidth, GH=gameCanvas.clientHeight;
 const gctx=gameCanvas.getContext('2d'), octx=oscCanvas.getContext('2d');
 
@@ -279,9 +264,7 @@ function getTuning(){
     const nd=LEVELS[lvlIdx].nodes[nodeIdx], d=sliderPct-nd.targetPercent, o=d*2;
     const actualFreq=nd.frequency*Math.pow(2,o);
     const hzDiff=Math.abs(actualFreq-nd.frequency);
-    // Aligned = within 10 Hz of target
     const isAligned=hzDiff<15;
-    // deltaRatio: 0 = exact, 1 = very far (max out at 200Hz away)
     const deltaRatio=Math.min(1,hzDiff/200);
     return {isAligned, deltaRatio, actualFreq, octOff:o, hzDiff};
 }
@@ -295,7 +278,7 @@ function toast(m,d=0){gameToast.innerText=m;gameToast.style.opacity='1';if(d>0)s
 function hideToast(){gameToast.style.opacity='0';}
 
 // ═══════════════════════════════
-// AUDIO — single context, drone gain controls title/game state
+// AUDIO
 // ═══════════════════════════════
 function cleanupAudio(){
     if(!audioCtx)return;
@@ -317,34 +300,26 @@ function initAudio(){
     harmonyGain=audioCtx.createGain(); harmonyGain.gain.value=0;
     harmonyOsc.connect(harmonyGain); harmonyGain.connect(masterGain); harmonyOsc.start();
 
+    // 修正 3：徹底拔除舊的 Web Audio 背景低音連線，使其不再發聲
     const df=audioCtx.createBiquadFilter(); df.type='lowpass'; df.frequency.value=200;
-    droneOsc=audioCtx.createOscillator(); droneOsc.type='sawtooth';
-    droneGain=audioCtx.createGain(); droneGain.gain.value=0;
-    droneOsc.connect(df); df.connect(droneGain); droneGain.connect(masterGain); droneOsc.start();
-    droneOsc.frequency.value=110;
+    droneOsc=audioCtx.createOscillator();   droneOsc.type='sawtooth';
+    droneGain=audioCtx.createGain();        droneGain.gain.value=0;
+    // 斷開連線，註釋掉： droneOsc.connect(df); df.connect(droneGain); droneGain.connect(masterGain); droneOsc.start();
 }
 
 function resumeAudio(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();}
 
-
-// 取得我們剛剛建立的 MP3 標籤
-const customBgm = document.getElementById('custom-bgm');
-// 你可以自由調整背景音樂的音量 (0.0 到 1.0)
-if (customBgm) customBgm.volume = 0.3; 
-
+// 修正 4：首頁播放自訂 MP3 檔案
 function startTitleDrone(){
-    // 進入主畫面或重置時，播放 MP3
     if(customBgm) {
-        customBgm.currentTime = 0; // 從頭播放
-        customBgm.play().catch(e => console.log("等待使用者點擊後播放"));
+        customBgm.currentTime = 0;
+        customBgm.play().catch(e => console.log("等待玩家點擊頁面後播放音樂"));
     }
 }
 
+// 修正 5：進入遊戲時不關閉音樂，讓它在背景繼續播（如果希望進入遊戲就安靜，可以在這行取消註釋 customBgm.pause()）
 function stopTitleDrone(){
-    // 這邊原本是遊戲開始時關閉主畫面音樂
-    // 如果你希望「遊戲中繼續播放這首 MP3」，這裡就【什麼都不用寫】
-    // 如果你希望「進入遊戲就安靜」，請取消註釋下面這行：
-    if(customBgm) customBgm.pause();
+    // if(customBgm) customBgm.pause(); 
 }
 
 function silenceAll(){
@@ -353,7 +328,7 @@ function silenceAll(){
     try{playerGain.gain.setTargetAtTime(0,now,0.1);}catch(e){}
     try{harmonyGain.gain.setTargetAtTime(0,now,0.1);}catch(e){}
     
-    // 【新增】當觸發暫停、失敗、或通關時，自動暫停自訂背景音樂
+    // 當暫停、失敗、通關時暫停 MP3
     if(customBgm) customBgm.pause();
 }
 
@@ -367,12 +342,10 @@ function playCue(){
     o.connect(g); g.connect(masterGain); o.start(); o.stop(now+1.5);
 }
 
-// FIX 4: Victory fanfare — played when ending begins, then audio stops
 function playVictoryFanfare(){
     if(!audioCtx)return;
     silenceAll();
     const now=audioCtx.currentTime;
-    // Rising arpeggio then held chord
     const fanfare=[[523.25,0],[659.25,0.12],[783.99,0.24],[1046.5,0.36],[1318.5,0.48],[1567.98,0.6]];
     fanfare.forEach(([f,t])=>{
         const o=audioCtx.createOscillator(),g=audioCtx.createGain();
@@ -422,7 +395,6 @@ function spawnTheme(){
 }
 
 function tickEyes(){
-    // Spawn only when danger zone (<=5s) AND not in green resonance — matches red pulse condition
     if(sanity<=5 && alignState!=='green' && Math.random()<0.03 && eyes.length<10){
         const x=Math.random()*GW,y=Math.random()*GH;
         if(Math.hypot(x-GW/2,y-GH/2)>80) eyes.push({x,y,scale:Math.random()*0.5+0.5,bt:Math.random()*100+50,life:300});
@@ -441,7 +413,6 @@ function drawGame(){
     gctx.fillStyle='#020617'; gctx.fillRect(0,0,GW,GH);
     const s=getTuning(), cx=GW/2, cy=GH/2, type=LEVELS[lvlIdx].type;
 
-    // Particles (always spawn)
     spawnTheme();
     tParticles.forEach(p=>{
         p.x+=p.speedX; p.y+=p.speedY; p.rot+=p.rotSpeed;
@@ -455,14 +426,12 @@ function drawGame(){
         gctx.restore();
     });
 
-    // Fog
     const maxR=Math.max(160,GW*0.4), tLR=s.isAligned?maxR:Math.max(25,maxR*(1-s.deltaRatio));
     lightR+=(tLR-lightR)*0.1;
     const sg=gctx.createRadialGradient(cx,cy,lightR*0.2,cx,cy,lightR);
     sg.addColorStop(0,'rgba(0,0,0,0)'); sg.addColorStop(0.5,'rgba(3,7,18,0.5)'); sg.addColorStop(1,'rgba(3,7,18,1)');
     gctx.fillStyle=sg; gctx.fillRect(0,0,GW,GH);
 
-    // Eyes
     tickEyes();
     eyes.forEach(e=>{
         if(Math.hypot(e.x-cx,e.y-cy)<lightR)return;
@@ -475,7 +444,6 @@ function drawGame(){
         }
     });
 
-    // Player dot — blue default, red when <=5s, green when aligned
     baseR+=(targetR-baseR)*0.1;
     const bY=cy+bobY;
     const pg=gctx.createRadialGradient(cx,bY,1,cx,bY,baseR);
@@ -489,7 +457,6 @@ function drawGame(){
     }
     gctx.save(); gctx.beginPath(); gctx.arc(cx,bY,baseR,0,Math.PI*2); gctx.fillStyle=pg; gctx.fill(); gctx.restore();
 
-    // Fireworks
     for(let i=fParticles.length-1;i>=0;i--){
         const p=fParticles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.04; p.alpha-=0.006;
         if(p.alpha<=0){fParticles.splice(i,1);continue;}
@@ -497,8 +464,6 @@ function drawGame(){
         gctx.beginPath(); gctx.arc(p.x,p.y,p.size,0,Math.PI*2); gctx.fill(); gctx.restore();
     }
 
-    // FIX 3: Ending white circle — draws on canvas, which has already been
-    // expanded via CSS to cover the whole phone. No clipping issues.
     if(endingPhase===1){
         endCircleR += 22;
         gctx.save();
@@ -539,12 +504,10 @@ function updateLogic(){
     const s=getTuning();
     const isLast=(lvlIdx===LEVELS.length-1)&&(nodeIdx===LEVELS[lvlIdx].nodes.length-1);
 
-    // Alignment state machine
     if(s.isAligned){alignTimer++;alignState=alignTimer>=60?'green':'locking';}
     else{alignTimer=0;alignState='none';}
     const green=alignState==='green';
 
-    // Audio
     if(audioCtx){
         if(sliderActive){
             playerOsc.frequency.setTargetAtTime(s.actualFreq,audioCtx.currentTime,0.05);
@@ -557,18 +520,16 @@ function updateLogic(){
         }
     }
 
-    // Sanity — always ticks, freezes only on green
     if(green){
-        if(audioCtx)droneGain.gain.setTargetAtTime(0.01,audioCtx.currentTime,0.3);
+        // 修正 6：拔除舊 Web Audio 背景音控制
         dangerPulse.style.borderColor='rgba(220,38,38,0)';
         dangerPulse.style.boxShadow='none';
     } else {
         sanity=Math.max(0,sanity-1/60);
-        if(audioCtx)droneGain.gain.setTargetAtTime(0.01+s.deltaRatio*0.3,audioCtx.currentTime,0.1);
-        // Fix 3: danger pulse only when <=5s, escalating intensity
+        // 修正 7：拔除舊 Web Audio 背景音控制
         if(sanity<=5){
-            const danger=(5-sanity)/5; // 0→1 as sanity goes 5→0
-            const pulse=Math.sin(Date.now()*0.02*(1+danger*4))*0.5+0.5; // faster oscillation
+            const danger=(5-sanity)/5;
+            const pulse=Math.sin(Date.now()*0.02*(1+danger*4))*0.5+0.5;
             const alpha=0.3+danger*0.7*pulse;
             const spread=Math.floor(danger*18*pulse);
             dangerPulse.style.borderColor=`rgba(220,38,38,${alpha.toFixed(2)})`;
@@ -579,13 +540,11 @@ function updateLogic(){
         }
     }
 
-    // Walk bob
     if(sliderActive){
         const spd=1+(isLast&&green?stepProg*0.035:0), amp=1+(isLast&&green?stepProg*0.025:0);
         walkT+=0.15*spd; bobY=Math.abs(Math.sin(walkT))*-8*amp;
     } else {bobY+=(0-bobY)*0.1;}
 
-    // Step progress
     if(green){
         stepProg+=100/(60*5);
         const rem=Math.ceil((100-stepProg)/20);
@@ -598,7 +557,6 @@ function updateLogic(){
         if(isLast)targetR=Math.max(20,20+stepProg*1.5);
     }
 
-    // UI — sanity bar color escalates
     const pct=(sanity/MAX_SANITY)*100;
     sanityBar.style.width=`${pct}%`;
     if(sanity<=3){sanityBar.style.background='#dc2626';}
@@ -608,14 +566,9 @@ function updateLogic(){
     if(sanity<=5) sanityTxt.style.color='#f97316';
     else sanityTxt.style.color='';
     if(visualAssist){
-        // Player needle: map octaveOffset (-1..+1) to 0..100%
-        tunerNeedle.style.left=`${Math.max(2,Math.min(98,(s.octOff+1)*50))}%`;
-        // Target pin: always at 50% (target = 0 offset by definition)
-        // Already set to 50% in HTML; target-zone width reflects 15Hz tolerance
         const nd=LEVELS[lvlIdx].nodes[nodeIdx];
-        // 15Hz tolerance as fraction of the bar: how much octave offset = 15Hz?
-        const hzPerOctave=nd.frequency; // one full octave doubles freq
-        const toleranceFrac=(15/hzPerOctave)*0.5; // fraction of half-bar width
+        const hzPerOctave=nd.frequency;
+        const toleranceFrac=(15/hzPerOctave)*0.5;
         const zonePct=Math.max(1,Math.min(10,toleranceFrac*100*2));
         G('tuner-target-zone').style.width=`${zonePct}%`;
     }
@@ -633,45 +586,34 @@ function advanceNode(){
     for(let k=0;k<30;k++)fParticles.push({x:GW/2,y:GH/2,size:Math.random()*4+2,vx:(Math.random()-0.5)*8,vy:(Math.random()-0.5)*8,alpha:1,color:`hsl(${Math.random()*360},100%,60%)`});
     const lvl=LEVELS[lvlIdx];
     if(nodeIdx<lvl.nodes.length-1)nodeIdx++;
-    else if(lvlIdx<LEVELS.length-1){lvlIdx++;nodeIdx=0;if(audioCtx)droneOsc.frequency.value=LEVELS[lvlIdx].bgmTone;}
+    else if(lvlIdx<LEVELS.length-1){lvlIdx++;nodeIdx=0;}
     updateUI();
     toast(nodeIdx===0?`【通關】進入下一關：${LEVELS[lvlIdx].name}`:'突破障礙！尋下個隨機共鳴點',3000);
 }
 
-// ── FIX 3 & 4: Ending sequence ──────────────────────────────
-// Phase 1: canvas-container expands via CSS class to fill phone,
-//          white circle draws on the canvas from player center outward,
-//          victory fanfare plays (all other sound stops).
-// Phase 2: once circle fills, fade in victory text overlay.
 function triggerEnding(){
     gameActive=false; sliderActive=false;
-    if(customBgm) customBgm.pause(); // 【新增】通關時關閉自訂背景音
+    if(customBgm) customBgm.pause(); // 通關結局時關閉音樂
 
-    // FIX 4: kill all game sounds, play fanfare
     playVictoryFanfare();
 
-    // Fireworks burst before white-out
     for(let i=0;i<120;i++) fParticles.push({
         x:GW/2+(Math.random()-0.5)*40, y:GH/2+(Math.random()-0.5)*40,
         size:Math.random()*5+2.5, vx:(Math.random()-0.5)*14, vy:(Math.random()-0.5)*14-3,
         alpha:1.5, color:`hsl(${Math.random()*360},100%,65%)`
     });
 
-    // Step 1: expand canvas-container to cover whole phone
-    // We animate it with position absolute + inset:0 (class ending-expand)
     canvasContainer.classList.add('ending-expand');
 
-    // Give one frame for class to apply, then sync canvas size to new container size
     requestAnimationFrame(()=>{
         gameCanvas.width=canvasContainer.offsetWidth;
         gameCanvas.height=canvasContainer.offsetHeight;
         GW=gameCanvas.width; GH=gameCanvas.height;
-        endCircleR=baseR; // start from current dot size
+        endCircleR=baseR;
         endingPhase=1;
 
-        // After the circle has definitely filled everything (~1.8s), show victory
         const diag=Math.hypot(GW,GH);
-        const timeNeeded=Math.ceil(diag/22)*(1000/60)+400; // frames * 16ms + buffer
+        const timeNeeded=Math.ceil(diag/22)*(1000/60)+400;
         setTimeout(()=>{
             endingPhase=2;
             showVictory();
@@ -679,27 +621,21 @@ function triggerEnding(){
     });
 }
 
-// FIX 3: victory overlay fades in over the solid white canvas
 function showVictory(){
-    // Canvas stays white (endingPhase=2, circle stopped drawing but last frame was all white)
     victoryLayer.style.display='block';
-    // Gradient from white-to-victory-color to avoid harsh cut
     victoryLayer.style.background='linear-gradient(135deg,#0f172a 0%,#1e1b4b 30%,#311042 70%,#022c22 100%)';
-    // Fade in after tiny delay
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
         victoryLayer.style.opacity='1';
-        // Show start-overlay on top after fade completes
         setTimeout(buildVictoryScreen, 700);
     }));
 }
 
 function buildVictoryScreen(){
-    // Give the overlay a real dark background so it's solid and clickable
     startOverlay.style.removeProperty('pointer-events');
     startOverlay.style.pointerEvents='auto';
     startOverlay.style.opacity='1';
     startOverlay.style.background='linear-gradient(135deg,#0f172a 0%,#1e1b4b 30%,#311042 70%,#022c22 100%)';
-    startOverlay.style.zIndex='49'; // above victory-layer(48)
+    startOverlay.style.zIndex='49';
 
     gameSubtitle.innerText='✨ FREEDOM! 你成功走出了隨機迷宮 ✨';
     gameSubtitle.className='text-xs font-orbitron text-yellow-300 tracking-widest mb-1 font-bold animate-pulse';
@@ -719,7 +655,7 @@ function buildVictoryScreen(){
 }
 
 // ═══════════════════════════════
-// RESET  (FIX 1: always clean)
+// RESET
 // ═══════════════════════════════
 function resetGame(full=false){
     gameActive=false; sliderActive=false; endingPhase=0; endCircleR=0;
@@ -731,13 +667,11 @@ function resetGame(full=false){
     sanity=MAX_SANITY; stepProg=0; baseR=20; targetR=20; lightR=60; walkT=0; bobY=0; sliderPct=0.5;
     eyes.length=0; tParticles.length=0; fParticles.length=0;
 
-    // Undo ending CSS changes
     canvasContainer.classList.remove('ending-expand');
     canvasContainer.style.removeProperty('position');
     canvasContainer.style.removeProperty('inset');
     canvasContainer.style.removeProperty('z-index');
 
-    // Reset canvas to natural size next frame
     requestAnimationFrame(()=>{
         gameCanvas.width=gameCanvas.clientWidth; gameCanvas.height=gameCanvas.clientHeight;
         GW=gameCanvas.width; GH=gameCanvas.height;
@@ -750,18 +684,15 @@ function resetGame(full=false){
     dangerPulse.style.borderColor='rgba(220,38,38,0)';
     hideToast();
 
-    // Hide jumpscare
     jumpscareScreen.classList.add('hidden');
     ghostFace.style.transform='';
 
-    // Restore start overlay — clear only the inline styles we ever set
     startOverlay.style.removeProperty('background');
     startOverlay.style.removeProperty('opacity');
     startOverlay.style.removeProperty('z-index');
     startOverlay.style.removeProperty('pointer-events');
-    startOverlay.className='absolute inset-0 z-40 bg-gray-950/95 flex flex-col items-center justify-between p-8 text-center rounded-[36px] transition-all duration-500';
+    startOverlay.className='absolute inset-0 z-40 bg-gray-950/95 flex flex-col items-center justify-between p-8 text-center rounded-[3px] transition-all duration-500';
     startOverlay.style.opacity='1';
-    // Ensure it intercepts clicks (it is the start screen, so pointer-events on)
     startOverlay.style.pointerEvents='auto';
 
     gameTitle.innerText='SOUND MAZE';
@@ -781,7 +712,6 @@ function resetGame(full=false){
             </ul>
         </div>`;
 
-    // Clone start button to clear all old listeners
     const ob=G('btn-start'), nb=ob.cloneNode(true);
     nb.innerHTML='<i class="fa-solid fa-play mr-2"></i> 進入黑暗迷宮';
     nb.className='w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-orbitron font-bold text-lg rounded-2xl transition-all duration-300 shadow-lg glow-green';
@@ -789,7 +719,6 @@ function resetGame(full=false){
     ob.parentNode.replaceChild(nb, ob);
 
     genPool();
-    // Reinit full audio engine (all oscillators), then start title drone for start screen
     initAudio();
     resumeAudio();
     startTitleDrone();
@@ -798,9 +727,8 @@ function resetGame(full=false){
 }
 
 function startGame(){
-    // Audio must already be inited (initAudio called on first click before this)
     resumeAudio();
-    stopTitleDrone();  // fade drone out, game audio takes over
+    stopTitleDrone();
     startOverlay.style.opacity='0';
     startOverlay.style.pointerEvents='none';
     genPool(); updateUI(); sanity=MAX_SANITY; gameActive=true;
@@ -812,7 +740,6 @@ function triggerJumpscare(){
     jumpscareScreen.classList.remove('hidden');
     let n=0;
     const iv=setInterval(()=>{
-        // Full shake intensity — safe because ghost-layer has pointer-events:none
         const dx=(Math.random()-0.5)*70, dy=(Math.random()-0.5)*60;
         ghostFace.style.transform=`translate(${dx}px,${dy}px) scale(${1+n*0.05})`;
         if(++n>25)clearInterval(iv);
@@ -820,7 +747,7 @@ function triggerJumpscare(){
 }
 
 // ═══════════════════════════════
-// SLIDER  (FIX 2: no color cues)
+// SLIDER
 // ═══════════════════════════════
 function updateSlider(){
     sliderKnob.style.left=`calc(${sliderPct*100}% - ${sliderPct*48}px)`;
@@ -830,7 +757,6 @@ function moveSlider(cx){
     sliderPct=Math.max(0,Math.min(1,(cx-r.left-pad)/(r.width-pad*2)));
     updateSlider();
     joystickTxt.innerText=`PITCH POSITION: ${Math.floor(sliderPct*100)}%`;
-    // FIX 2: slider aura stays neutral always — no color change
 }
 function sliderEnd(){if(!sliderActive)return;sliderActive=false;}
 
@@ -846,20 +772,17 @@ window.addEventListener('touchend',sliderEnd);
 // ═══════════════════════════════
 G('btn-start').addEventListener('click', startGame);
 
-// First interaction: init full audio engine (all oscillators), then start title drone
 let audioReady=false;
 function ensureAudio(){
     if(audioReady)return;
     audioReady=true;
-    initAudio();   // creates playerOsc, harmonyOsc, droneOsc — all ready
+    initAudio();
     resumeAudio();
-    startTitleDrone();  // fade in drone on title screen
+    startTitleDrone(); // 確保玩家點擊螢幕任何地方時，MP3 正常開始播
     document.removeEventListener('pointerdown', ensureAudio);
 }
 document.addEventListener('pointerdown', ensureAudio);
 
-// FIX 1: btn-failed-retry is bound ONCE and always calls resetGame(true).
-// It never gets cloned so its listener persists across resets.
 G('btn-failed-retry').addEventListener('click', e=>{
     e.stopPropagation();
     resetGame(true);
@@ -883,7 +806,6 @@ G('btn-resume').addEventListener('click',e=>{
     btnPause.innerHTML='<i class="fa-solid fa-pause text-xs"></i>';
     resumeAudio();
 
-    // 【新增】取消暫停時恢復音樂
     if(customBgm) customBgm.play();
 });
 btnVA.addEventListener('click',e=>{
@@ -903,6 +825,5 @@ function loop(){
 }
 window.onload=()=>{genPool();updateUI();loop();};
 </script>
-<audio id="custom-bgm" src="/audio/song1.mp3" loop></audio>
 </body>
 </html>
