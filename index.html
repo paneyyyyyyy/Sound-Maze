@@ -480,7 +480,7 @@ function playChime(){
 function playJumpscare(){
     if(!audioCtx)return;
     const now=audioCtx.currentTime,g=audioCtx.createGain();
-    g.gain.setValueAtTime(0.4,now); g.gain.exponentialRampToValueAtTime(0.001,now+1.8); g.connect(masterGain);
+    g.gain.setValueAtTime(0.1,now); g.gain.exponentialRampToValueAtTime(0.001,now+1.8); g.connect(masterGain);
     const r=audioCtx.createOscillator(); r.type='sawtooth'; r.frequency.setValueAtTime(60,now); r.frequency.exponentialRampToValueAtTime(20,now+1.5);
     const s=audioCtx.createOscillator(); s.type='sawtooth'; s.frequency.setValueAtTime(1000,now); s.frequency.exponentialRampToValueAtTime(3000,now+1);
     r.connect(g); s.connect(g); r.start(now); s.start(now); r.stop(now+1.8); s.stop(now+1.8);
