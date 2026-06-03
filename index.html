@@ -459,6 +459,8 @@ function drawGame(){
     gctx.fillStyle=sg; gctx.fillRect(0,0,GW,GH);
 
     tickEyes();
+    // ★ 綠色共鳴時立刻清空所有眼睛，完全不渲染
+    if(alignState==='green') eyes.length=0;
     eyes.forEach(e=>{
         if(Math.hypot(e.x-cx,e.y-cy)<lightR)return;
         if(e.bt>=15){
@@ -792,16 +794,30 @@ window.addEventListener('touchend',sliderEnd);
 // ═══════════════════════════════
 G('btn-start').addEventListener('click', startGame);
 
+// ★ 自動播放：onload 直接嘗試，瀏覽器若攔截則等第一次點擊補播
 let audioReady=false;
 function ensureAudio(){
     if(audioReady)return;
     audioReady=true;
     initAudio();
     resumeAudio();
-    startTitleDrone();   // ★ 第一次點擊解鎖後立刻播放 MP3
+    startTitleDrone();
     document.removeEventListener('pointerdown', ensureAudio);
 }
-document.addEventListener('pointerdown', ensureAudio);
+window.addEventListener('load', ()=>{
+    initAudio();
+    resumeAudio();
+    if(customBgm){
+        customBgm.currentTime=0;
+        customBgm.play().then(()=>{
+            audioReady=true;
+            document.removeEventListener('pointerdown', ensureAudio);
+        }).catch(()=>{
+            // 瀏覽器阻擋自動播放，等用戶第一次觸碰才播
+            document.addEventListener('pointerdown', ensureAudio);
+        });
+    }
+});
 
 G('btn-failed-retry').addEventListener('click', e=>{
     e.stopPropagation();
